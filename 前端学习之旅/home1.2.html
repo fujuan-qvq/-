@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端学习之旅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb, #90caf9);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1565c0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 淡蓝色网格背景 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(227, 242, 253, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(227, 242, 253, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 
+                0 0 20px rgba(33, 150, 243, 0.3),
+                0 0 40px rgba(33, 150, 243, 0.2),
+                inset 0 0 20px rgba(33, 150, 243, 0.1);
+            overflow: hidden;
+            border: 1px solid #2196f3;
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 50%, rgba(33, 150, 243, 0.05) 50%),
+                linear-gradient(transparent 50%, rgba(33, 150, 243, 0.05) 50%);
+            background-size: 10px 10px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #2196f3, #42a5f5);
+            color: #fff;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #1976d2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.2);
+        }
+
+        .game-body {
+            padding: 30px;
+            min-height: 700px;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid;
+            box-shadow: 0 0 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .level-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px;
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(33, 150, 243, 0.05) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(33, 150, 243, 0.05) 50%, transparent 51%);
+            background-size: 15px 15px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .level-card.html-town {
+            border-color: #e53935;
+            box-shadow: 0 0 15px rgba(229, 57, 53, 0.3);
+        }
+
+        .level-card.html-town:hover {
+            box-shadow: 0 10px 25px rgba(229, 57, 53, 0.5);
+        }
+
+        .level-card.css-valley {
+            border-color: #1e88e5;
+            box-shadow: 0 0 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .level-card.css-valley:hover {
+            box-shadow: 0 10px 25px rgba(30, 136, 229, 0.5);
+        }
+
+        .level-card.js-port {
+            border-color: #fdd835;
+            box-shadow: 0 0 15px rgba(253, 216, 53, 0.3);
+        }
+
+        .level-card.js-port:hover {
+            box-shadow: 0 10px 25px rgba(253, 216, 53, 0.5);
+        }
+
+        .level-card.responsive-forest {
+            border-color: #43a047;
+            box-shadow: 0 0 15px rgba(67, 160, 71, 0.3);
+        }
+
+        .level-card.responsive-forest:hover {
+            box-shadow: 0 10px 25px rgba(67, 160, 71, 0.5);
+        }
+
+        .level-card.animation-mountain {
+            border-color: #8e24aa;
+            box-shadow: 0 0 15px rgba(142, 36, 170, 0.3);
+        }
+
+        .level-card.animation-mountain:hover {
+            box-shadow: 0 10px 25px rgba(142, 36, 170, 0.5);
+        }
+
+        .level-card.framework-castle {
+            border-color: #f4511e;
+            box-shadow: 0 0 15px rgba(244, 81, 30, 0.3);
+        }
+
+        .level-card.framework-castle:hover {
+            box-shadow: 0 10px 25px rgba(244, 81, 30, 0.5);
+        }
+
+        .level-card.state-management {
+            border-color: #00acc1;
+            box-shadow: 0 0 15px rgba(0, 172, 193, 0.3);
+        }
+
+        .level-card.state-management:hover {
+            box-shadow: 0 10px 25px rgba(0, 172, 193, 0.5);
+        }
+
+        .level-card.api-ocean {
+            border-color: #546e7a;
+            box-shadow: 0 0 15px rgba(84, 110, 122, 0.3);
+        }
+
+        .level-card.api-ocean:hover {
+            box-shadow: 0 10px 25px rgba(84, 110, 122, 0.5);
+        }
+
+        .level-card.toolchain-factory {
+            border-color: #6d4c41;
+            box-shadow: 0 0 15px rgba(109, 76, 65, 0.3);
+        }
+
+        .level-card.toolchain-factory:hover {
+            box-shadow: 0 10px 25px rgba(109, 76, 65, 0.5);
+        }
+
+        .level-card.testing-desert {
+            border-color: #d32f2f;
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.3);
+        }
+
+        .level-card.testing-desert:hover {
+            box-shadow: 0 10px 25px rgba(211, 47, 47, 0.5);
+        }
+
+        .level-card.deployment-peak {
+            border-color: #00796b;
+            box-shadow: 0 0 15px rgba(0, 121, 107, 0.3);
+        }
+
+        .level-card.deployment-peak:hover {
+            box-shadow: 0 10px 25px rgba(0, 121, 107, 0.5);
+        }
+
+        .level-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            text-align: center;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        .level-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+            color: #1565c0;
+        }
+
+        .level-description {
+            font-size: 0.9em;
+            color: #42a5f5;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-status {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+
+        .level-difficulty {
+            color: #ff9800;
+        }
+
+        .level-progress {
+            color: #2196f3;
+        }
+
+        .locked {
+            position: relative;
+            opacity: 0.7;
+        }
+
+        .locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            z-index: 2;
+        }
+
+        .completed {
+            position: relative;
+        }
+
+        .completed::after {
+            content: '✅';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            z-index: 2;
+        }
+
+        .section-title {
+            color: #1976d2;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(25, 118, 210, 0.3);
+            border-bottom: 2px solid rgba(33, 150, 243, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .learning-path {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .path-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2196f3, #1976d2, #2196f3);
+            z-index: 0;
+        }
+
+        .path-milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .path-milestone:hover {
+            transform: translateY(-5px);
+        }
+
+        .milestone-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196f3;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px #2196f3;
+            transition: all 0.3s ease;
+        }
+
+        .path-milestone:hover .milestone-dot {
+            background: #1976d2;
+            transform: scale(1.2);
+        }
+
+        .milestone-label {
+            font-size: 0.9em;
+            color: #42a5f5;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .path-milestone:hover .milestone-label {
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        /* 淡蓝色文字效果 */
+        .blue-text {
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 15px #2196f3,
+                0 0 20px #2196f3,
+                0 0 25px #2196f3;
+            animation: blue-flicker 2s infinite alternate;
+        }
+
+        @keyframes blue-flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 
+                    0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 15px #2196f3,
+                    0 0 20px #2196f3,
+                    0 0 25px #2196f3;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        /* 淡蓝色扫描线效果 */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(33, 150, 243, 0.05) 51%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .gold-coin {
+            color: #ff9800;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(33, 150, 243, 0.1);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2196f3, #1976d2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* 悬浮效果样式 */
+        .highlight {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .level-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .learning-path {
+                flex-wrap: wrap;
+            }
+            
+            .path-line {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="scanlines"></div>
+        <div class="game-header">
+            <div class="header-content">
+                <h1 class="blue-text">🎮前端学习之旅</h1>
+                <div class="player-stats">
+                    <div class="stat">总进度: <span id="total-progress">27%</span></div>
+                    <div class="stat">金币: <span class="gold-coin" id="gold-count">15</span> 🪙</div>
+                    <div class="stat">已完成: <span id="completed-levels">3/11</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-body">
+            <h2 class="section-title">学习路径概览</h2>
+            
+            <div class="learning-path">
+                <div class="path-line"></div>
+                <div class="path-milestone" data-stage="basic">
+                    <div class="milestone-dot"></div>
+                    <div class="milestone-label">基础阶段</div>
+                </div>
+                <div class="path-milestone" data-stage="intermediate">
+                    <div class="milestone-dot"></div>
+                    <div class="milestone-label">中级阶段</div>
+                </div>
+                <div class="path-milestone" data-stage="advanced">
+                    <div class="milestone-dot"></div>
+                    <div class="milestone-label">高级阶段</div>
+                </div>
+                <div class="path-milestone" data-stage="engineering">
+                    <div class="milestone-dot"></div>
+                    <div class="milestone-label">工程化阶段</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">学习关卡</h2>
+            
+            <div class="level-grid">
+                <!-- 基础阶段 -->
+                <div class="level-card html-town completed" data-stage="basic" onclick="openLevel('html_town.html')">
+                    <div class="level-icon">🏰</div>
+                    <div class="level-title">HTML镇</div>
+                    <div class="level-description">学习网页结构基础，构建语义化HTML</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★☆☆☆☆</span>
+                        <span class="level-progress">已完成</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card css-valley completed" data-stage="basic" onclick="openLevel('Css_valley.html')">
+                    <div class="level-icon">🏞️</div>
+                    <div class="level-title">CSS谷</div>
+                    <div class="level-description">掌握样式布局技巧，创建精美界面</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★☆☆☆</span>
+                        <span class="level-progress">已完成</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card js-port completed" data-stage="basic" onclick="openLevel('JavaScript.html')">
+                    <div class="level-icon">⚓</div>
+                    <div class="level-title">JavaScript港</div>
+                    <div class="level-description">实现交互功能，让网页动起来</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★☆☆</span>
+                        <span class="level-progress">已完成</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <!-- 中级阶段 -->
+                <div class="level-card responsive-forest" data-stage="intermediate" onclick="openLevel('responsive_forest.html')">
+                    <div class="level-icon">🌳</div>
+                    <div class="level-title">响应式森林</div>
+                    <div class="level-description">适配多设备，打造完美用户体验</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★☆☆☆</span>
+                        <span class="level-progress">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card animation-mountain" data-stage="intermediate" onclick="openLevel('animation_mountain.html')">
+                    <div class="level-icon">🏔️</div>
+                    <div class="level-title">动画山脉</div>
+                    <div class="level-description">创建流畅动画，提升视觉体验</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★☆☆</span>
+                        <span class="level-progress">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- 高级阶段 -->
+                <div class="level-card framework-castle locked" data-stage="advanced">
+                    <div class="level-icon">🏰</div>
+                    <div class="level-title">框架城堡</div>
+                    <div class="level-description">掌握现代前端框架，提高开发效率</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★☆</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card state-management locked" data-stage="advanced">
+                    <div class="level-icon">🌀</div>
+                    <div class="level-title">状态管理迷宫</div>
+                    <div class="level-description">掌握复杂应用状态管理技术</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★☆</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card api-ocean locked" data-stage="advanced">
+                    <div class="level-icon">🌊</div>
+                    <div class="level-title">API海洋</div>
+                    <div class="level-description">前后端数据交互与异步编程</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★☆</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card toolchain-factory locked" data-stage="advanced">
+                    <div class="level-icon">🏭</div>
+                    <div class="level-title">工具链工厂</div>
+                    <div class="level-description">构建工具与开发环境配置</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★☆</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- 工程化阶段 -->
+                <div class="level-card testing-desert locked" data-stage="engineering">
+                    <div class="level-icon">🏜️</div>
+                    <div class="level-title">测试沙漠</div>
+                    <div class="level-description">代码测试与质量保证</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★★</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="level-card deployment-peak locked" data-stage="engineering">
+                    <div class="level-icon">🗻</div>
+                    <div class="level-title">部署高峰</div>
+                    <div class="level-description">项目部署与性能优化</div>
+                    <div class="level-status">
+                        <span class="level-difficulty">★★★★★</span>
+                        <span class="level-progress">锁定</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 打开关卡页面
+        function openLevel(url) {
+            window.location.href = url;
+        }
+
+        // 更新总进度
+        function updateTotalProgress() {
+            const completedCards = document.querySelectorAll('.completed').length;
+            const totalCards = document.querySelectorAll('.level-card').length;
+            const progress = Math.round((completedCards / totalCards) * 100);
+            
+            document.getElementById('total-progress').textContent = progress + '%';
+            document.getElementById('completed-levels').textContent = completedCards + '/' + totalCards;
+        }
+
+        // 为学习路径添加点击事件
+        function setupPathClickEvents() {
+            const milestones = document.querySelectorAll('.path-milestone');
+            
+            milestones.forEach(milestone => {
+                milestone.addEventListener('click', function() {
+                    // 移除所有高亮效果
+                    document.querySelectorAll('.level-card').forEach(card => {
+                        card.classList.remove('highlight');
+                    });
+                    
+                    // 获取当前点击的阶段
+                    const stage = this.getAttribute('data-stage');
+                    
+                    // 根据阶段添加高亮效果
+                    switch(stage) {
+                        case 'basic':
+                            // 基础阶段：HTML、CSS、JavaScript
+                            document.querySelectorAll('.level-card[data-stage="basic"]').forEach(card => {
+                                card.classList.add('highlight');
+                            });
+                            break;
+                        case 'intermediate':
+                            // 中级阶段：响应式森林、动画山脉
+                            document.querySelectorAll('.level-card[data-stage="intermediate"]').forEach(card => {
+                                card.classList.add('highlight');
+                            });
+                            break;
+                        case 'advanced':
+                            // 高级阶段：状态管理迷宫、API海洋、工具链工厂、框架城堡
+                            document.querySelectorAll('.level-card[data-stage="advanced"]').forEach(card => {
+                                card.classList.add('highlight');
+                            });
+                            break;
+                        case 'engineering':
+                            // 工程化阶段：最后两个（测试沙漠、部署高峰）
+                            const engineeringCards = document.querySelectorAll('.level-card[data-stage="engineering"]');
+                            // 只选择最后两个
+                            for (let i = engineeringCards.length - 2; i < engineeringCards.length; i++) {
+                                engineeringCards[i].classList.add('highlight');
+                            }
+                            break;
+                    }
+                    
+                    // 5秒后移除高亮效果
+                    setTimeout(() => {
+                        document.querySelectorAll('.level-card').forEach(card => {
+                            card.classList.remove('highlight');
+                        });
+                    }, 5000);
+                });
+            });
+        }
+
+        // 初始化
+        function init() {
+            updateTotalProgress();
+            setupPathClickEvents();
+            
+            // 为所有未锁定的关卡添加点击效果
+            const unlockableCards = document.querySelectorAll('.level-card:not(.locked)');
+            unlockableCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 添加点击反馈
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>

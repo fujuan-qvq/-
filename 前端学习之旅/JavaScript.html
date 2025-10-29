@@ -1,0 +1,2943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript港 - 航标点亮挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 赛博朋克网格背景 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(16, 1, 32, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 1, 32, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(16, 1, 32, 0.85);
+            border-radius: 15px;
+            box-shadow: 
+                0 0 20px rgba(255, 204, 0, 0.5),
+                0 0 40px rgba(255, 204, 0, 0.3),
+                inset 0 0 20px rgba(255, 204, 0, 0.2);
+            overflow: hidden;
+            border: 1px solid #ffcc00;
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 50%, rgba(255, 204, 0, 0.1) 50%),
+                linear-gradient(transparent 50%, rgba(255, 204, 0, 0.1) 50%);
+            background-size: 10px 10px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            color: #1a1a1a;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #ff6600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 204, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+
+        .game-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 700px;
+        }
+
+        @media (max-width: 768px) {
+            .game-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scene-container {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scene-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(255, 204, 0, 0.1) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(255, 204, 0, 0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .pixel-scene {
+            background: #0a0014;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ff6600;
+            box-shadow: inset 0 0 20px rgba(255, 102, 0, 0.3);
+        }
+
+        .character-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            height: 120px;
+        }
+
+        /* 修改为船体和航标 */
+        .ship-body {
+            font-size: 60px;
+            filter: drop-shadow(0 0 10px #ffcc00);
+            animation: shipFloat 4s infinite;
+        }
+
+        .beacon {
+            font-size: 50px;
+            filter: drop-shadow(0 0 10px #ff6600);
+            animation: beaconPulse 3s infinite;
+        }
+
+        /* 航标点亮状态 */
+        .beacon.lit {
+            filter: drop-shadow(0 0 15px #ffcc00);
+            color: #ffcc00;
+            animation: beaconGlow 2s infinite alternate;
+        }
+
+        @keyframes shipFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes beaconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes beaconGlow {
+            0% { text-shadow: 0 0 5px #ffcc00, 0 0 10px #ffcc00; }
+            100% { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00, 0 0 30px #ffcc00; }
+        }
+
+        /* 新手引导样式 */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .tutorial-container {
+            max-width: 800px;
+            width: 90%;
+            background: rgba(16, 1, 32, 0.95);
+            border-radius: 15px;
+            border: 2px solid #ffcc00;
+            box-shadow: 
+                0 0 30px rgba(255, 204, 0, 0.7),
+                inset 0 0 20px rgba(255, 204, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tutorial-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(255, 204, 0, 0.1) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(255, 204, 0, 0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .tutorial-content {
+            position: relative;
+            z-index: 2;
+            padding: 30px;
+        }
+
+        .tutorial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 204, 0, 0.5);
+        }
+
+        .tutorial-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+
+        .tutorial-skip {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+            border: 1px solid #ff6666;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .tutorial-skip:hover {
+            background: rgba(255, 0, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .tutorial-body {
+            min-height: 320px;
+            margin-bottom: 25px;
+        }
+
+        .tutorial-step {
+            display: none;
+        }
+
+        .tutorial-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tutorial-step h3 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+            font-size: 1.4em;
+        }
+
+        .tutorial-step p, .tutorial-step li {
+            color: #b8b8ff;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 1em;
+        }
+
+        .tutorial-step ul, .tutorial-step ol {
+            padding-left: 25px;
+            margin: 18px 0;
+        }
+
+        .tutorial-step li {
+            margin-bottom: 10px;
+        }
+
+        .tutorial-step strong {
+            color: #ff9900;
+        }
+
+        .tutorial-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tutorial-controls .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .btn-warning {
+            background: #ff9900;
+            color: #1a1a1a;
+            box-shadow: 0 0 15px rgba(255, 153, 0, 0.5);
+        }
+
+        .btn-primary {
+            background: #ffcc00;
+            color: #1a1a1a;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+
+        .btn-success {
+            background: #ff6600;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .tutorial-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            color: #ffcc00;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .progress-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #4a2c6d;
+            border: 2px solid #ffcc00;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .progress-dot.active {
+            background: #ffcc00;
+            box-shadow: 0 0 10px #ffcc00;
+            transform: scale(1.2);
+        }
+
+        .code-highlight {
+            background: rgba(255, 204, 0, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #ffcc00;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            font-size: 0.9em;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            background: rgba(74, 44, 109, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #ffcc00;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .tutorial-container {
+                width: 95%;
+                margin: 10px;
+            }
+            
+            .tutorial-content {
+                padding: 20px;
+            }
+        }
+
+        /* 其余原有样式保持不变... */
+        .pixel-art {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            margin-bottom: 15px;
+        }
+
+        .pixel {
+            width: 20px;
+            height: 20px;
+            background: #4a2c6d;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .pixel.active {
+            background: #ffcc00;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            width: 120px;
+            height: 80px;
+            margin: 10px auto;
+            position: relative;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            font-weight: bold;
+            font-size: 0.8em;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .interactive-demo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.9);
+        }
+
+        .task-container {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #ff6600;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .task-title {
+            color: #ffcc00;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            border-bottom: 2px solid rgba(255, 204, 0, 0.5);
+            padding-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+
+        .task-description {
+            background: rgba(74, 44, 109, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            font-size: 0.95em;
+        }
+
+        .task-steps {
+            margin: 10px 0;
+            padding-left: 18px;
+            font-size: 0.9em;
+        }
+
+        .task-steps li {
+            margin: 6px 0;
+            color: #b8b8ff;
+        }
+
+        .code-editor {
+            background: #0a0014;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #b8b8ff;
+            font-size: 0.9em;
+        }
+
+        textarea.code-area {
+            width: 100%;
+            height: 400px;
+            background: #050010;
+            border: 1px solid #ff9900;
+            border-radius: 5px;
+            padding: 15px;
+            color: #ffcc00;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(255, 153, 0, 0.3);
+        }
+
+        .fairy-assistant {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #1a1a1a;
+            border: 1px solid #ffeeaa;
+            box-shadow: 0 0 15px rgba(255, 238, 170, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fairy-assistant::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .fairy-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .fairy-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffeeaa, #ffcc00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #4a2c6d;
+            box-shadow: 0 0 15px #ffeeaa;
+            font-size: 1.2em;
+        }
+
+        .help-levels {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .help-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .help-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .help-btn:hover::before {
+            left: 100%;
+        }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .help-btn.level-1 { 
+            border-left: 3px solid #aaffaa;
+            box-shadow: 0 0 10px rgba(170, 255, 170, 0.5);
+        }
+        .help-btn.level-2 { 
+            border-left: 3px solid #ffffaa;
+            box-shadow: 0 0 10px rgba(255, 255, 170, 0.5);
+        }
+        .help-btn.level-3 { 
+            border-left: 3px solid #ffaaaa;
+            box-shadow: 0 0 10px rgba(255, 170, 170, 0.5);
+        }
+
+        .fairy-response {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .code-snippet {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            color: #ffeeaa;
+            border: 1px solid rgba(255, 238, 170, 0.3);
+        }
+
+        .insert-code-btn {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        }
+
+        .insert-code-btn:hover {
+            background: linear-gradient(135deg, #ffd633, #ffad33);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: #ffcc00;
+            color: #1a1a1a;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+
+        .btn-success {
+            background: #ff6600;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+        }
+
+        .btn-warning {
+            background: #ff9900;
+            color: #1a1a1a;
+            box-shadow: 0 0 15px rgba(255, 153, 0, 0.5);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .completion-badge {
+            background: linear-gradient(135deg, #ff6600, #cc5200);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+            animation: pulse 2s infinite;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 102, 0, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 102, 0, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 102, 0, 0.5); }
+        }
+
+        .gold-coin {
+            color: #ffcc00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffcc00;
+        }
+
+        .feedback-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-success {
+            background: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+
+        .feedback-error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .scene-content {
+            color: #b8b8ff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .js-preview {
+            background: rgba(10, 0, 20, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 150px;
+            border: 1px solid #ffcc00;
+            color: #b8b8ff;
+            text-align: left;
+            font-size: 0.9em;
+            overflow: auto;
+            box-shadow: inset 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+
+        /* 霓虹文字效果 */
+        .neon-text {
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 15px #ffcc00,
+                0 0 20px #ffcc00,
+                0 0 25px #ffcc00;
+            animation: neon-flicker 2s infinite alternate;
+        }
+
+        @keyframes neon-flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 
+                    0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 15px #ffcc00,
+                    0 0 20px #ffcc00,
+                    0 0 25px #ffcc00;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        /* 赛博朋克扫描线效果 */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 51%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .fairy-sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white;
+            animation: sparkle 2s infinite;
+            z-index: 1;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .interactive-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .interactive-element {
+            width: 70px;
+            height: 50px;
+            background: rgba(255, 204, 0, 0.3);
+            border: 1px solid #ffcc00;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .interactive-element:hover {
+            background: rgba(255, 204, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .console-output {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #ff9900;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            height: 80px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            color: #ffcc00;
+        }
+
+        /* 防御挑战样式 - 修改为航标点亮 */
+        .defense-challenge {
+            background: rgba(16, 1, 32, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .defense-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #ffcc00;
+            font-size: 1.2em;
+        }
+        
+        /* 航标显示美化 */
+        .beacon-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: rgba(10, 0, 20, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #ffcc00;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+        
+        .beacon-icon {
+            font-size: 2em;
+            margin-right: 15px;
+            filter: drop-shadow(0 0 5px #ffcc00);
+            animation: beaconGlow 2s infinite alternate;
+        }
+        
+        @keyframes beaconGlow {
+            0% { transform: scale(1); filter: drop-shadow(0 0 5px #ffcc00); }
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 10px #ffcc00); }
+        }
+        
+        .beacon-info {
+            flex: 1;
+        }
+        
+        .beacon-label {
+            font-size: 0.9em;
+            color: #b8b8ff;
+            margin-bottom: 5px;
+        }
+        
+        .beacon-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+        
+        .beacon-bar-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #ff6600;
+            margin-top: 10px;
+            position: relative;
+        }
+        
+        .beacon-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ffcc00, #ff9900);
+            width: 40%;
+            transition: width 0.5s ease-out;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .beacon-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: beaconShine 2s infinite;
+        }
+        
+        @keyframes beaconShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .beacon-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.7);
+        }
+        
+        .wave-indicator {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .wave-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #4a2c6d;
+            border: 1px solid #ffcc00;
+            transition: all 0.3s;
+        }
+        
+        .wave-dot.active {
+            background: #ffcc00;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .script-attack {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff6600;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #ffcc00;
+            min-height: 150px;
+            position: relative;
+            display: none;
+        }
+        
+        .script-attack.active {
+            display: block;
+            animation: attackSlideIn 0.5s forwards;
+        }
+        
+        @keyframes attackSlideIn {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        
+        .script-content {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .script-threat {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 3px;
+            color: #ff9999;
+        }
+        
+        .defense-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .defense-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        .defense-btn.fix {
+            background: #ff9900;
+            color: #1a1a1a;
+            box-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+        }
+        
+        .defense-btn.ignore {
+            background: #4a2c6d;
+            color: #b8b8ff;
+            box-shadow: 0 0 10px rgba(74, 44, 109, 0.5);
+        }
+        
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffcc00;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+        
+        .defense-result {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+            font-weight: bold;
+        }
+        
+        .defense-success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #aaffaa;
+            border: 1px solid #aaffaa;
+            box-shadow: 0 0 15px rgba(170, 255, 170, 0.5);
+        }
+        
+        .defense-failure {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ffaaaa;
+            border: 1px solid #ffaaaa;
+            box-shadow: 0 0 15px rgba(255, 170, 170, 0.5);
+        }
+        
+        .highlight-code {
+            background: rgba(255, 204, 0, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #ffcc00;
+            animation: highlightPulse 1.5s infinite;
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% { background: rgba(255, 204, 0, 0.2); }
+            50% { background: rgba(255, 204, 0, 0.5); }
+        }
+        
+        .defense-guide {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ffcc00;
+            display: none;
+        }
+        
+        .guide-title {
+            color: #ffcc00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .guide-rule {
+            margin: 8px 0;
+            padding-left: 15px;
+            border-left: 3px solid #ffcc00;
+        }
+
+        /* 验证面板样式 */
+        .validation-panel {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ffcc00;
+        }
+        
+        .validation-title {
+            color: #ffcc00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .validation-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(74, 44, 109, 0.5);
+            display: flex;
+            align-items: center;
+        }
+        
+        .validation-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4a2c6d;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ffcc00;
+        }
+        
+        .validation-check.valid {
+            background: #aaffaa;
+            color: #1a1a1a;
+        }
+        
+        .validation-check.invalid {
+            background: #ffaaaa;
+            color: #1a1a1a;
+        }
+        
+        .validation-text {
+            flex: 1;
+        }
+
+        /* 选项卡样式 */
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ffcc00;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background: rgba(16, 1, 32, 0.7);
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #b8b8ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .tab-button.active {
+            color: #ffcc00;
+            border-bottom: 3px solid #ffcc00;
+            background: rgba(255, 204, 0, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 场景切换样式 */
+        .scene-js {
+            display: block;
+        }
+        
+        .scene-html {
+            display: none;
+        }
+        
+        /* 航标点亮状态 */
+        .beacon-progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .beacon-light {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #4a2c6d;
+            border: 2px solid #ffcc00;
+            transition: all 0.3s;
+        }
+        
+        .beacon-light.lit {
+            background: #ffcc00;
+            box-shadow: 0 0 15px #ffcc00;
+            animation: beaconPulse 2s infinite;
+        }
+        
+        /* 小船动画区域 */
+        .ship-animation-area {
+            position: relative;
+            height: 100px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: rgba(10, 0, 20, 0.5);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .ship-animation {
+            position: absolute;
+            font-size: 40px;
+            transition: all 2s ease-in-out;
+            z-index: 10;
+        }
+        
+        .ship-success {
+            left: 0;
+            transform: translateX(0);
+        }
+        
+        .ship-crossing {
+            left: 100%;
+            transform: translateX(-100%);
+        }
+        
+        .ship-explosion {
+            font-size: 50px;
+            animation: explode 0.5s forwards;
+        }
+        
+        .ship-sunk {
+            font-size: 30px;
+            opacity: 0.7;
+        }
+        
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(0.5); opacity: 0; }
+        }
+        
+        .water-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to top, rgba(52, 152, 219, 0.7), transparent);
+            z-index: 5;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 10px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%233498db"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%233498db"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%233498db"/></svg>');
+            background-size: 1200px 100%;
+            animation: wave 12s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1200px; }
+        }
+        
+        .success-sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffcc00;
+            animation: sparkleFloat 2s ease-out forwards;
+        }
+        
+        @keyframes sparkleFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 新增新手引导遮罩层 -->
+    <div id="tutorial-overlay">
+        <div class="tutorial-container">
+            <div class="tutorial-content">
+                <div class="tutorial-header">
+                    <h2>⚓ JavaScript港新手指导</h2>
+                    <button class="tutorial-skip" onclick="skipTutorial()">跳过指导</button>
+                </div>
+                <div class="tutorial-body">
+                    <div class="tutorial-step active" id="tutorial-step-1">
+                        <h3>欢迎来到JavaScript港！</h3>
+                        <p>这是你学习JavaScript交互编程的冒险港口。你将通过修复交互功能和点亮航标来掌握JavaScript核心概念。</p>
+                        <p>港口分为三个主要区域：</p>
+                        <ul>
+                            <li><strong>主线任务</strong> - 修复JavaScript交互功能</li>
+                            <li><strong>航标点亮挑战</strong> - 识别和修复有问题的代码</li>
+                            <li><strong>验证面板</strong> - 检查你的代码是否符合最佳实践</li>
+                        </ul>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-2">
+                        <h3>游戏界面介绍</h3>
+                        <p>左侧是<strong>交互演示区</strong>，显示JavaScript执行效果和航标状态。</p>
+                        <p>右侧是<strong>代码编辑区</strong>，包含任务说明、JavaScript编辑器和控制按钮。</p>
+                        <p>右上角显示你的<strong>游戏进度和金币数量</strong>。</p>
+                        <div class="feature-list">
+                            <div class="feature-item">💡 交互演示 - 实时查看代码效果</div>
+                            <div class="feature-item">⚓ 航标状态 - 显示挑战进度</div>
+                            <div class="feature-item">📜 代码编辑器 - 编写JavaScript代码</div>
+                            <div class="feature-item">🎮 控制面板 - 测试和提交代码</div>
+                        </div>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-3">
+                        <h3>主线任务模式</h3>
+                        <p>在这个模式中，你需要修复JavaScript交互功能：</p>
+                        <ol>
+                            <li>实现<strong>事件监听</strong> - 处理用户交互</li>
+                            <li>使用<strong>数组方法</strong> - map、filter、forEach等</li>
+                            <li>创建<strong>动态内容</strong> - 更新DOM元素</li>
+                            <li>实现<strong>表单验证</strong> - 验证用户输入</li>
+                            <li>添加<strong>动画效果</strong> - 增强用户体验</li>
+                        </ol>
+                        <p>使用<span class="code-highlight">测试代码</span>按钮检查功能，<span class="code-highlight">完成挑战</span>提交任务。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-4">
+                        <h3>航标点亮挑战</h3>
+                        <p>在这个模式中，你需要识别和修复有问题的JavaScript代码：</p>
+                        <ul>
+                            <li>阅读出现的<strong>代码片段</strong></li>
+                            <li>判断代码是否存在<strong>问题或威胁</strong></li>
+                            <li>选择<strong>修复代码</strong>或<strong>忽略代码</strong></li>
+                            <li>保持<strong>航标状态≥80%</strong>才能通关</li>
+                        </ul>
+                        <p>记住每个波次的代码规则，正确判断哪些代码需要修复。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-5">
+                        <h3>JavaScript核心概念</h3>
+                        <p>在JavaScript港中，你将学习以下重要概念：</p>
+                        <div class="feature-list">
+                            <div class="feature-item"><strong>事件处理</strong> - addEventListener, 事件对象</div>
+                            <div class="feature-item"><strong>DOM操作</strong> - 获取元素, 修改内容, 样式操作</div>
+                            <div class="feature-item"><strong>数组方法</strong> - map, filter, reduce, forEach</div>
+                            <div class="feature-item"><strong>函数编程</strong> - 函数定义, 参数传递, 返回值</div>
+                            <div class="feature-item"><strong>异步编程</strong> - setTimeout, 事件循环基础</div>
+                            <div class="feature-item"><strong>代码调试</strong> - console.log, 错误处理</div>
+                        </div>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-6">
+                        <h3>仙女帮助系统</h3>
+                        <p>当你遇到困难时，可以使用仙女帮助系统：</p>
+                        <ul>
+                            <li><strong>线索提示</strong> (1金币) - 获得解决问题的关键线索</li>
+                            <li><strong>思路指导</strong> (2金币) - 获得详细的解决思路</li>
+                            <li><strong>完整代码</strong> (3金币) - 获得完整的解决方案</li>
+                        </ul>
+                        <p>通过完成任务和航标挑战可以获得更多金币。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-7">
+                        <h3>开始JavaScript冒险！</h3>
+                        <p>现在你已经了解了JavaScript港的基本玩法，可以开始你的编程冒险了！</p>
+                        <p>记住：JavaScript是现代网页交互的核心，掌握它将让你能够创建动态、响应式的用户体验。</p>
+                        <p>祝你在JavaScript港的编程之旅愉快！</p>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <div style="font-size: 3em;">⚓✨</div>
+                            <p><strong>准备好点亮所有航标了吗？</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tutorial-progress">
+                    <span>步骤</span>
+                    <div class="progress-dots">
+                        <div class="progress-dot active" id="dot-1" onclick="goToTutorialStep(1)"></div>
+                        <div class="progress-dot" id="dot-2" onclick="goToTutorialStep(2)"></div>
+                        <div class="progress-dot" id="dot-3" onclick="goToTutorialStep(3)"></div>
+                        <div class="progress-dot" id="dot-4" onclick="goToTutorialStep(4)"></div>
+                        <div class="progress-dot" id="dot-5" onclick="goToTutorialStep(5)"></div>
+                        <div class="progress-dot" id="dot-6" onclick="goToTutorialStep(6)"></div>
+                        <div class="progress-dot" id="dot-7" onclick="goToTutorialStep(7)"></div>
+                    </div>
+                </div>
+                <div class="tutorial-controls">
+                    <button class="btn btn-warning" id="tutorial-prev" onclick="prevTutorialStep()" style="display: none;">上一步</button>
+                    <button class="btn btn-primary" id="tutorial-next" onclick="nextTutorialStep()">下一步</button>
+                    <button class="btn btn-success" id="tutorial-finish" onclick="finishTutorial()" style="display: none;">开始编程</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 原有游戏容器 -->
+    <div class="game-container">
+        <div class="scanlines"></div>
+        <div class="game-header">
+            <div class="header-content">
+                <h1 class="neon-text">⚓ JavaScript港</h1>
+                <div class="player-stats">
+                    <div class="stat">关卡: 3/3</div>
+                    <div class="stat">金币: <span class="gold-coin" id="gold-count">5</span> 🪙</div>
+                    <div class="stat">进度: <span id="progress">0%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-body">
+            <!-- 左侧：游戏场景 -->
+            <div class="scene-container">
+                <!-- JavaScript港场景 -->
+                <div class="scene-js" id="js-scene">
+                    <h2>⚓ JavaScript港</h2>
+                    <div class="pixel-scene">
+                        <!-- 修改为船体和航标 -->
+                        <div class="character-container">
+                            <div class="ship-body">⛵</div>
+                            <div class="beacon" id="main-beacon">💡</div>
+                        </div>
+                        <div class="pixel-art">
+                            <div class="pixel"></div><div class="pixel"></div><div class="pixel active"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+                        </div>
+                        <div class="interactive-demo" id="interactive-demo">点击我!</div>
+                        <div class="scene-content">
+                            <h3>欢迎来到JavaScript港！</h3>
+                            <p>港口的交互系统出现了故障！使用JavaScript修复功能问题...</p>
+                        </div>
+                        <div class="interactive-area">
+                            <div class="interactive-element" id="element-1">元素1</div>
+                            <div class="interactive-element" id="element-2">元素2</div>
+                            <div class="interactive-element" id="element-3">元素3</div>
+                            <div class="interactive-element" id="element-4">元素4</div>
+                        </div>
+                        <div class="console-output" id="console-output">
+                            > 控制台输出区域<br>
+                            > 等待JavaScript代码执行...
+                        </div>
+                        <div class="js-preview" id="js-preview">
+                            <!-- JavaScript预览将在这里显示 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HTML镇场景 -->
+                <div class="scene-html" id="html-scene">
+                    <h2>JavaScript港</h2>
+                    <div class="pixel-scene">
+                        <!-- 修改为船体和航标 -->
+                        <div class="character-container">
+                            <div class="ship-body">⛵</div>
+                            <div class="beacon" id="html-beacon">💡</div>
+                        </div>
+                        <div class="scene-content">
+                            <h3>保卫小船</h3>
+                            <p>"化身航船领航员！"</p>
+                            <p>在信息海域中抵御暗礁迷雾的侵蚀，依据航海规则识别危险水域并清除障碍</p>
+                            <p>点亮安全航标，守护航道畅通。</p>
+                            <div class="score-display">得分：<span id="semantic-score">0</span></div>
+                        </div>
+                        <div class="semantic-attack" id="semantic-attack">
+                            <div class="semantic-content" id="semantic-content">
+                                <!-- 语义攻击内容将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：任务和代码编辑 -->
+            <div class="task-container">
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="js-task" data-scene="js-scene">主线任务</button>
+                        <button class="tab-button" data-tab="html-task" data-scene="html-scene">航标点亮挑战</button>
+                        <button class="tab-button" data-tab="validation" data-scene="js-scene">验证面板</button>
+                    </div>
+                    <div class="tab-content active" id="js-task">
+                        <h2 class="task-title">📝 任务目标</h2>
+                        <div class="task-description">
+                            <p>JavaScript港的交互功能出现了故障！请使用JavaScript修复以下功能问题：</p>
+                            <ul class="task-steps">
+                                <li>实现事件监听和DOM操作</li>
+                                <li>使用数组方法处理数据</li>
+                                <li>创建动态内容更新</li>
+                                <li>实现简单的表单验证</li>
+                                <li>处理用户交互和动画</li>
+                            </ul>
+                        </div>
+
+                        <div class="code-editor">
+                            <div class="editor-header">
+                                <span>📜 script.js</span>
+                                <span>JavaScript代码</span>
+                            </div>
+                            <textarea class="code-area" id="js-code" placeholder="在这里编写你的JavaScript代码...">
+// JavaScript港交互挑战
+
+// 任务1: 实现点击事件处理
+document.getElementById('interactive-demo').addEventListener('click', function() {
+    // 在这里添加点击事件的处理代码
+    console.log('交互元素被点击了！');
+});
+
+// 任务2: 实现鼠标悬停事件
+document.getElementById('interactive-demo').addEventListener('mouseover', function() {
+    // 在这里添加鼠标悬停事件的处理代码
+});
+
+document.getElementById('interactive-demo').addEventListener('mouseout', function() {
+    // 在这里添加鼠标离开事件的处理代码
+});
+
+// 任务3: 使用数组方法
+const items = ['宝剑', '药水', '金币', '地图', '钥匙'];
+
+// 使用数组方法处理物品
+function processItems() {
+    // 在这里添加数组方法的代码
+    console.log('处理物品数组:', items);
+}
+
+// 任务4: 动态内容更新
+function updateContent() {
+    // 在这里添加动态更新内容的代码
+    const output = document.getElementById('console-output');
+    output.innerHTML += '> 内容已更新<br>';
+}
+
+// 任务5: 表单验证函数
+function validateForm() {
+    // 在这里添加表单验证的代码
+    console.log('表单验证功能已调用');
+    return true;
+}
+
+// 初始化函数
+function initJS() {
+    console.log('JavaScript港初始化完成');
+    // 在这里添加初始化代码
+}</textarea>
+                        </div>
+
+                        <div class="fairy-assistant">
+                            <div class="fairy-header">
+                                <div class="fairy-avatar">🧚‍♀️</div>
+                                <h3>仙女下凡</h3>
+                            </div>
+                            <p>🧚‍♀️ 遇到困难吗？请你支付金币给我</p>
+                            <div class="help-levels">
+                                <button class="help-btn level-1" onclick="getHelp(1)">
+                                    💡 线索提示 (1🪙)
+                                </button>
+                                <button class="help-btn level-2" onclick="getHelp(2)">
+                                    🎯 思路指导 (2🪙)
+                                </button>
+                                <button class="help-btn level-3" onclick="getHelp(3)">
+                                    🔧 完整代码 (3🪙)
+                                </button>
+                            </div>
+                            <div class="fairy-response" id="fairy-response">
+                                <!-- 仙女回复内容 -->
+                            </div>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn btn-warning" onclick="resetCode()">🔄 重置代码</button>
+                            <button class="btn btn-primary" onclick="testCode()">🧪 测试代码</button>
+                            <button class="btn btn-success" onclick="submitCode()">🚀 完成挑战</button>
+                        </div>
+
+                        <div class="completion-badge" id="completion-badge">
+                            🎉 恭喜完成所有挑战！你已成为前端大师！
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="html-task">
+                        <h2 class="task-title">📝 航标点亮挑战</h2>
+                        <div class="task-description">
+                            <p>JavaScript港的航标系统出现了故障！请点亮航标：</p>
+                            <ul class="task-steps">
+                                <li>第一波: 修复事件绑定</li>
+                                <li>第二波: 优化数据处理</li>
+                                <li>第三波: 提升DOM操作效率</li>
+                                <li>点亮所有航标才能通关</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="defense-challenge">
+                            <div class="defense-header">
+                                <span>💡 航标点亮挑战</span>
+                            </div>
+                            
+                            <!-- 修改为航标显示 -->
+                            <div class="beacon-display">
+                                <div class="beacon-icon">💡</div>
+                                <div class="beacon-info">
+                                    <div class="beacon-label">航标状态</div>
+                                    <div class="beacon-value" id="beacon-status">40%</div>
+                                </div>
+                                <div class="beacon-bar-container">
+                                    <div class="beacon-bar" id="beacon-fill" style="width: 40%;">
+                                        <div class="beacon-status">40%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 航标点亮进度 -->
+                            <div class="beacon-progress">
+                                <div class="beacon-light" id="beacon-1"></div>
+                                <div class="beacon-light" id="beacon-2"></div>
+                                <div class="beacon-light" id="beacon-3"></div>
+                                <div class="beacon-light" id="beacon-4"></div>
+                                <div class="beacon-light" id="beacon-5"></div>
+                            </div>
+                            
+                            <!-- 小船动画区域 -->
+                            <div class="ship-animation-area">
+                                <div class="water-effect"></div>
+                                <div class="wave"></div>
+                                <div class="ship-animation ship-success" id="ship-animation">⛵</div>
+                            </div>
+                            
+                            <div class="wave-indicator">
+                                <div class="wave-dot" id="beacon-wave-1"></div>
+                                <div class="wave-dot" id="beacon-wave-2"></div>
+                                <div class="wave-dot" id="beacon-wave-3"></div>
+                            </div>
+                            
+                            <div class="timer" id="beacon-timer">5</div>
+                            
+                            <div class="script-attack" id="beacon-script-attack">
+                                <div class="script-content" id="beacon-script-content"></div>
+                                <div class="defense-controls">
+                                    <button class="defense-btn fix" id="beacon-fix-btn">修复代码</button>
+                                    <button class="defense-btn ignore" id="beacon-ignore-btn">忽略代码</button>
+                                </div>
+                            </div>
+                            
+                            <div class="defense-result" id="beacon-defense-result"></div>
+                            
+                            <div class="controls">
+                                <button class="btn btn-warning" id="start-beacon-defense">开始点亮</button>
+                                <button class="btn btn-primary" id="beacon-show-guide">点亮指南</button>
+                                <button class="btn btn-success" id="beacon-restart-defense" style="display: none;">重新点亮</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="validation">
+                        <h2 class="task-title">📝 验证面板</h2>
+                        
+                        <div class="validation-panel">
+                            <div class="validation-title">JavaScript最佳实践</div>
+                            <div class="validation-item">
+                                <div class="validation-check" id="check-event">!</div>
+                                <div class="validation-text">事件监听：优先使用 addEventListener</div>
+                            </div>
+                            <div class="validation-item">
+                                <div class="validation-check" id="check-data">!</div>
+                                <div class="validation-text">数据处理：善用 map/filter/reduce</div>
+                            </div>
+                            <div class="validation-item">
+                                <div class="validation-check" id="check-dom">!</div>
+                                <div class="validation-text">动态更新：避免频繁操作 innerHTML</div>
+                            </div>
+                            <div class="validation-item">
+                                <div class="validation-check" id="check-form">!</div>
+                                <div class="validation-text">表单验证：实时校验 + 错误提示</div>
+                            </div>
+                            <div class="validation-item">
+                                <div class="validation-check" id="check-animation">!</div>
+                                <div class="validation-text">动画优化：使用 requestAnimationFrame 或 transition</div>
+                            </div>
+                        </div>
+                        
+                        <div class="fairy-assistant">
+                            <div class="fairy-header">
+                                <div class="fairy-avatar">🧚‍♀️</div>
+                                <h3>仙女下凡</h3>
+                            </div>
+                            <p>🧚‍♀️ 请选择帮助类型：</p>
+                            <div class="help-levels">
+                                <button class="help-btn level-1" onclick="getValidationHelp(1)">
+                                    💡 删除指导 (1🪙)
+                                </button>
+                                <button class="help-btn level-2" onclick="getValidationHelp(2)">
+                                    🎯 防御指导 (2🪙)
+                                </button>
+                                <button class="help-btn level-3" onclick="getValidationHelp(3)">
+                                    🔧 重置代码 (3🪙)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 新手指导状态
+        const tutorialState = {
+            currentStep: 1,
+            totalSteps: 7,
+            completed: false
+        };
+
+        // 显示新手指导
+        function showTutorial() {
+            // 检查是否已经完成过指导
+            const tutorialCompleted = localStorage.getItem('jsHarborTutorialCompleted');
+            
+            if (tutorialCompleted === 'true') {
+                return; // 如果已经完成过，则不显示
+            }
+            
+            document.getElementById('tutorial-overlay').style.display = 'flex';
+            updateTutorialStep();
+        }
+
+        // 更新新手指导步骤
+        function updateTutorialStep() {
+            // 隐藏所有步骤
+            for (let i = 1; i <= tutorialState.totalSteps; i++) {
+                document.getElementById(`tutorial-step-${i}`).classList.remove('active');
+            }
+            
+            // 显示当前步骤
+            document.getElementById(`tutorial-step-${tutorialState.currentStep}`).classList.add('active');
+            
+            // 更新进度点
+            for (let i = 1; i <= tutorialState.totalSteps; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i === tutorialState.currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            }
+            
+            // 更新按钮状态
+            const prevBtn = document.getElementById('tutorial-prev');
+            const nextBtn = document.getElementById('tutorial-next');
+            const finishBtn = document.getElementById('tutorial-finish');
+            
+            if (tutorialState.currentStep === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                finishBtn.style.display = 'none';
+            } else if (tutorialState.currentStep === tutorialState.totalSteps) {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'none';
+                finishBtn.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+                finishBtn.style.display = 'none';
+            }
+        }
+
+        // 跳转到指定步骤
+        function goToTutorialStep(step) {
+            tutorialState.currentStep = step;
+            updateTutorialStep();
+        }
+
+        // 下一步
+        function nextTutorialStep() {
+            if (tutorialState.currentStep < tutorialState.totalSteps) {
+                tutorialState.currentStep++;
+                updateTutorialStep();
+            }
+        }
+
+        // 上一步
+        function prevTutorialStep() {
+            if (tutorialState.currentStep > 1) {
+                tutorialState.currentStep--;
+                updateTutorialStep();
+            }
+        }
+
+        // 完成指导
+        function finishTutorial() {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+            tutorialState.completed = true;
+            
+            // 将完成状态保存到本地存储
+            localStorage.setItem('jsHarborTutorialCompleted', 'true');
+            
+            // 显示欢迎消息
+            showFeedback('🎉 欢迎来到JavaScript港！开始你的编程冒险吧！', 'success');
+            
+            // 添加一些初始特效
+            createSparkles();
+            lightBeacon('main-beacon');
+        }
+
+        // 跳过指导
+        function skipTutorial() {
+            if (confirm('确定要跳过新手指导吗？你可以在设置中重新查看指导。')) {
+                finishTutorial();
+            }
+        }
+
+        // 原有的游戏状态和函数
+        let goldCoins = 5;
+        let progress = 0;
+
+        // 创建仙女闪烁效果
+        function createSparkles() {
+            const fairyAssistant = document.querySelector('.fairy-assistant');
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'fairy-sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                fairyAssistant.appendChild(sparkle);
+            }
+        }
+
+        // 更新UI显示
+        function updateUI() {
+            document.getElementById('gold-count').textContent = goldCoins;
+            document.getElementById('progress').textContent = progress + '%';
+        }
+
+        // 更新控制台输出
+        function updateConsole(message) {
+            const consoleOutput = document.getElementById('console-output');
+            consoleOutput.innerHTML += `> ${message}<br>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // 点亮航标
+        function lightBeacon(beaconId) {
+            const beacon = document.getElementById(beaconId);
+            beacon.classList.add('lit');
+        }
+
+        // 熄灭航标
+        function dimBeacon(beaconId) {
+            const beacon = document.getElementById(beaconId);
+            beacon.classList.remove('lit');
+        }
+
+        // 执行JavaScript代码
+        function executeJSCode() {
+            const code = document.getElementById('js-code').value;
+            const preview = document.getElementById('js-preview');
+            
+            try {
+                // 清空预览区域
+                preview.innerHTML = '';
+                
+                // 创建示例HTML结构
+                const htmlStructure = `
+                    <div class="demo-container">
+                        <h4>JavaScript交互演示</h4>
+                        <p>代码执行结果将显示在这里</p>
+                        <button id="demo-button" style="background: #ffcc00; color: #1a1a1a; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 5px;">测试按钮</button>
+                        <div id="demo-output" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+                    </div>
+                `;
+                
+                preview.innerHTML = htmlStructure;
+                
+                // 执行JavaScript代码
+                eval(code);
+                
+                // 初始化JS
+                if (typeof initJS === 'function') {
+                    initJS();
+                    updateConsole('JavaScript初始化完成');
+                }
+                
+                // 为演示按钮添加事件
+                const demoButton = document.getElementById('demo-button');
+                if (demoButton) {
+                    demoButton.addEventListener('click', function() {
+                        const demoOutput = document.getElementById('demo-output');
+                        demoOutput.innerHTML = '按钮点击事件已触发！';
+                        updateConsole('演示按钮被点击');
+                    });
+                }
+                
+                return true;
+            } catch (error) {
+                updateConsole(`错误: ${error.message}`);
+                return false;
+            }
+        }
+
+        // 仙女帮助系统
+        function getHelp(level) {
+            if (goldCoins < level) {
+                alert('金币不足！请完成更多任务来获取金币。');
+                return;
+            }
+
+            goldCoins -= level;
+            updateUI();
+
+            const response = document.getElementById('fairy-response');
+            let helpMessage = '';
+
+            switch(level) {
+                case 1:
+                    helpMessage = `
+                    💡 <strong>JavaScript提示：</strong>
+                    <ul>
+                        <li>事件监听: addEventListener('click', function)</li>
+                        <li>DOM操作: getElementById, innerHTML, classList</li>
+                        <li>数组方法: filter, map, forEach, reduce</li>
+                        <li>函数定义: function name() { } 或箭头函数</li>
+                        <li>控制台输出: console.log()</li>
+                    </ul>
+                    `;
+                    break;
+                case 2:
+                    helpMessage = `
+                    🎯 <strong>编程思路：</strong>
+                    <ol>
+                        <li>为交互元素添加点击事件监听器</li>
+                        <li>使用数组方法处理数据集合</li>
+                        <li>创建函数来动态更新页面内容</li>
+                        <li>实现表单验证逻辑</li>
+                        <li>添加鼠标悬停效果增强交互性</li>
+                    </ol>
+                    `;
+                    break;
+                case 3:
+                    helpMessage = `
+                    🔧 <strong>完整JavaScript代码示例：</strong>
+                    <div class="code-snippet">
+// JavaScript港交互挑战
+
+// 任务1: 实现点击事件处理
+document.getElementById('interactive-demo').addEventListener('click', function() {
+    console.log('交互元素被点击了！');
+    this.style.backgroundColor = '#ff6600';
+    this.textContent = '点击成功！';
+    updateConsole('交互元素被点击');
+});
+
+// 任务2: 实现鼠标悬停事件
+document.getElementById('interactive-demo').addEventListener('mouseover', function() {
+    this.style.transform = 'scale(1.1)';
+    this.style.boxShadow = '0 0 20px #ffcc00';
+});
+
+document.getElementById('interactive-demo').addEventListener('mouseout', function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = '0 0 15px rgba(255, 204, 0, 0.7)';
+});
+
+// 任务3: 使用数组方法
+const items = ['宝剑', '药水', '金币', '地图', '钥匙'];
+
+// 使用数组方法处理物品
+function processItems() {
+    // 过滤出长度大于2的物品
+    const filteredItems = items.filter(item => item.length > 2);
+    
+    // 映射为带编号的物品
+    const numberedItems = filteredItems.map((item, index) => \`\${index + 1}. \${item}\`);
+    
+    console.log('处理后的物品:', numberedItems);
+    updateConsole('物品处理完成: ' + numberedItems.join(', '));
+    
+    return filteredItems;
+}
+
+// 任务4: 动态内容更新
+function updateContent() {
+    const output = document.getElementById('console-output');
+    output.innerHTML += '> 动态内容已更新<br>';
+    
+    // 更新交互元素文本
+    const interactiveElements = document.querySelectorAll('.interactive-element');
+    interactiveElements.forEach((element, index) => {
+        element.textContent = \`更新 \${index + 1}\`;
+    });
+}
+
+// 任务5: 表单验证函数
+function validateForm() {
+    // 模拟表单验证
+    const username = 'testUser';
+    const email = 'test@example.com';
+    
+    if (!username || username.length < 3) {
+        console.log('用户名无效');
+        return false;
+    }
+    
+    if (!email || !email.includes('@')) {
+        console.log('邮箱地址无效');
+        return false;
+    }
+    
+    console.log('表单验证成功');
+    updateConsole('表单验证通过');
+    return true;
+}
+
+// 初始化函数
+function initJS() {
+    console.log('JavaScript港初始化完成');
+    updateConsole('系统初始化完成');
+    
+    // 为所有交互元素添加点击事件
+    const interactiveElements = document.querySelectorAll('.interactive-element');
+    interactiveElements.forEach(element => {
+        element.addEventListener('click', function() {
+            this.style.backgroundColor = '#ff6600';
+            this.style.color = 'white';
+            updateConsole(\`\${this.textContent} 被点击\`);
+        });
+    });
+}
+                    </div>
+                    <button class="insert-code-btn" onclick="insertFullCode()">插入完整代码</button>
+                    `;
+                    break;
+            }
+
+            response.innerHTML = helpMessage;
+            response.style.display = 'block';
+            
+            // 添加仙女特效
+            createSparkles();
+        }
+
+        // 插入完整代码
+        function insertFullCode() {
+            const fullCode = `// JavaScript港交互挑战
+
+// 任务1: 实现点击事件处理
+document.getElementById('interactive-demo').addEventListener('click', function() {
+    console.log('交互元素被点击了！');
+    this.style.backgroundColor = '#ff6600';
+    this.textContent = '点击成功！';
+    updateConsole('交互元素被点击');
+});
+
+// 任务2: 实现鼠标悬停事件
+document.getElementById('interactive-demo').addEventListener('mouseover', function() {
+    this.style.transform = 'scale(1.1)';
+    this.style.boxShadow = '0 0 20px #ffcc00';
+});
+
+document.getElementById('interactive-demo').addEventListener('mouseout', function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = '0 0 15px rgba(255, 204, 0, 0.7)';
+});
+
+// 任务3: 使用数组方法
+const items = ['宝剑', '药水', '金币', '地图', '钥匙'];
+
+// 使用数组方法处理物品
+function processItems() {
+    // 过滤出长度大于2的物品
+    const filteredItems = items.filter(item => item.length > 2);
+    
+    // 映射为带编号的物品
+    const numberedItems = filteredItems.map((item, index) => \`\${index + 1}. \${item}\`);
+    
+    console.log('处理后的物品:', numberedItems);
+    updateConsole('物品处理完成: ' + numberedItems.join(', '));
+    
+    return filteredItems;
+}
+
+// 任务4: 动态内容更新
+function updateContent() {
+    const output = document.getElementById('console-output');
+    output.innerHTML += '> 动态内容已更新<br>';
+    
+    // 更新交互元素文本
+    const interactiveElements = document.querySelectorAll('.interactive-element');
+    interactiveElements.forEach((element, index) => {
+        element.textContent = \`更新 \${index + 1}\`;
+    });
+}
+
+// 任务5: 表单验证函数
+function validateForm() {
+    // 模拟表单验证
+    const username = 'testUser';
+    const email = 'test@example.com';
+    
+    if (!username || username.length < 3) {
+        console.log('用户名无效');
+        return false;
+    }
+    
+    if (!email || !email.includes('@')) {
+        console.log('邮箱地址无效');
+        return false;
+    }
+    
+    console.log('表单验证成功');
+    updateConsole('表单验证通过');
+    return true;
+}
+
+// 初始化函数
+function initJS() {
+    console.log('JavaScript港初始化完成');
+    updateConsole('系统初始化完成');
+    
+    // 为所有交互元素添加点击事件
+    const interactiveElements = document.querySelectorAll('.interactive-element');
+    interactiveElements.forEach(element => {
+        element.addEventListener('click', function() {
+            this.style.backgroundColor = '#ff6600';
+            this.style.color = 'white';
+            updateConsole(\`\${this.textContent} 被点击\`);
+        });
+    });
+}`;
+            
+            document.getElementById('js-code').value = fullCode;
+            executeJSCode();
+            
+            // 隐藏仙女响应
+            document.getElementById('fairy-response').style.display = 'none';
+            
+            // 显示成功消息
+            showFeedback('完整代码已插入到编辑器中！', 'success');
+        }
+
+        // 测试代码
+        function testCode() {
+            if (!executeJSCode()) {
+                showFeedback('JavaScript代码有语法错误，请检查', 'error');
+                return;
+            }
+            
+            try {
+                // 验证JavaScript功能
+                let score = 0;
+                const features = [
+                    { test: () => typeof processItems === 'function', points: 20, name: '数组方法' },
+                    { test: () => typeof validateForm === 'function', points: 20, name: '表单验证' },
+                    { test: () => typeof updateContent === 'function', points: 20, name: '动态更新' },
+                    { test: () => document.getElementById('interactive-demo').onclick !== null, points: 20, name: '事件处理' },
+                    { test: () => typeof initJS === 'function', points: 20, name: '初始化函数' }
+                ];
+                
+                features.forEach(feature => {
+                    try {
+                        if (feature.test()) {
+                            score += feature.points;
+                        }
+                    } catch (e) {
+                        // 忽略测试错误
+                    }
+                });
+                
+                progress = Math.max(progress, score);
+                updateUI();
+                
+                if (score >= 60) {
+                    // 更新场景预览
+                    const sceneContent = document.querySelector('.scene-content');
+                    sceneContent.innerHTML = `
+                        <h3>✅ 代码验证通过！</h3>
+                        <p>JavaScript功能基本正确，交互系统开始恢复...</p>
+                        <p>航标正在点亮！</p>
+                    `;
+                    // 点亮主航标
+                    lightBeacon('main-beacon');
+                    showFeedback('代码验证通过！JavaScript功能正确。', 'success');
+                } else {
+                    showFeedback(`代码还需完善，当前检测到 ${score}% 的关键功能`, 'error');
+                }
+                
+            } catch (error) {
+                showFeedback(`❌ 发现错误：${error.message}`, 'error');
+            }
+        }
+
+        // 提交代码
+        function submitCode() {
+            const code = document.getElementById('js-code').value;
+            
+            // 综合验证
+            const requiredFeatures = [
+                'addEventListener',
+                'function',
+                'console.log',
+                'getElementById',
+                'querySelectorAll'
+            ];
+            
+            let featureCount = 0;
+            requiredFeatures.forEach(feature => {
+                if (code.includes(feature)) featureCount++;
+            });
+
+            if (featureCount >= 3 && progress >= 60) {
+                progress = 100;
+                updateUI();
+                document.getElementById('completion-badge').style.display = 'block';
+                
+                // 更新场景，显示胜利
+                const sceneContent = document.querySelector('.scene-content');
+                sceneContent.innerHTML = `
+                    <h3 style="color: #ffcc00;">🎉 恭喜！JavaScript港恢复秩序！</h3>
+                    <p>你成功修复了所有交互功能，港口恢复了正常运转！</p>
+                    <p>所有航标已点亮！</p>
+                `;
+                
+                // 更新角色容器，显示胜利场景
+                const characterContainer = document.querySelector('.character-container');
+                characterContainer.innerHTML = `
+                    <div class="ship-body" style="filter: drop-shadow(0 0 15px #ffcc00);">⛵✨</div>
+                    <div class="beacon lit" style="filter: drop-shadow(0 0 15px #ffcc00);">💡🌟</div>
+                `;
+                
+                showFeedback('🎉 恭喜！你成功完成了所有挑战！', 'success');
+                
+                setTimeout(() => {
+                    alert('🎉 恭喜！你成功完成了所有前端开发挑战！\n你已成为一名合格的前端开发者！');
+                    // 这里可以添加游戏完成的逻辑
+                }, 2000);
+            } else {
+                showFeedback(`还需要完善代码！当前进度: ${progress}%\n确保实现主要JavaScript功能。`, 'error');
+            }
+        }
+
+        // 重置代码
+        function resetCode() {
+            if (confirm('确定要重置JavaScript代码吗？')) {
+                document.getElementById('js-code').value = `// JavaScript港交互挑战
+
+// 任务1: 实现点击事件处理
+document.getElementById('interactive-demo').addEventListener('click', function() {
+    // 在这里添加点击事件的处理代码
+});
+
+// 任务2: 实现鼠标悬停事件
+document.getElementById('interactive-demo').addEventListener('mouseover', function() {
+    // 在这里添加鼠标悬停事件的处理代码
+});
+
+document.getElementById('interactive-demo').addEventListener('mouseout', function() {
+    // 在这里添加鼠标离开事件的处理代码
+});
+
+// 任务3: 使用数组方法
+const items = ['宝剑', '药水', '金币', '地图', '钥匙'];
+
+// 使用数组方法处理物品
+function processItems() {
+    // 在这里添加数组方法的代码
+}
+
+// 任务4: 动态内容更新
+function updateContent() {
+    // 在这里添加动态更新内容的代码
+}
+
+// 任务5: 表单验证函数
+function validateForm() {
+    // 在这里添加表单验证的代码
+}
+
+// 初始化函数
+function initJS() {
+    // 在这里添加初始化代码
+}`;
+                progress = 0;
+                updateUI();
+                executeJSCode();
+                document.querySelector('.scene-content').innerHTML = `
+                    <h3>欢迎来到JavaScript港！</h3>
+                    <p>港口的交互系统出现了故障！使用JavaScript修复功能问题...</p>
+                `;
+                
+                // 重置控制台
+                document.getElementById('console-output').innerHTML = '> 控制台输出区域<br>> 等待JavaScript代码执行...';
+                
+                // 重置角色容器
+                const characterContainer = document.querySelector('.character-container');
+                characterContainer.innerHTML = `
+                    <div class="ship-body">⛵</div>
+                    <div class="beacon" id="main-beacon">💡</div>
+                `;
+                
+                // 熄灭航标
+                dimBeacon('main-beacon');
+                
+                showFeedback('代码已重置，可以重新开始挑战！', 'success');
+            }
+        }
+
+        // 显示反馈消息
+        function showFeedback(message, type) {
+            // 创建或获取反馈元素
+            let feedback = document.getElementById('action-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.id = 'action-feedback';
+                feedback.className = 'feedback-message';
+                document.querySelector('.controls').parentNode.insertBefore(feedback, document.querySelector('.controls'));
+            }
+            
+            feedback.textContent = message;
+            feedback.className = 'feedback-message';
+            feedback.classList.add(type === 'success' ? 'feedback-success' : 'feedback-error');
+            feedback.style.display = 'block';
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 3000);
+        }
+
+        // 航标点亮挑战变量
+        let beaconStatus = 40; // 初始值设为40%
+        let beaconWave = 0;
+        let beaconTimer;
+        let isBeaconActive = false;
+        let beaconCurrentScript;
+        
+        // 攻击脚本定义
+        const attackScripts = [
+            // 第一波：无效事件绑定
+            {
+                code: `// 第一波攻击：无效事件绑定
+document.getElementById("wrong-btn").addEventListener("click", function() {
+    console.log("按钮被点击");
+});`,
+                isThreat: true,
+                threatType: "无效事件绑定",
+                description: "尝试绑定到不存在的元素"
+            },
+            {
+                code: `// 第一波攻击：正确事件绑定
+document.getElementById("interactive-demo").addEventListener("click", function() {
+    this.style.backgroundColor = "#ff6600";
+});`,
+                isThreat: false,
+                threatType: "正确事件绑定",
+                description: "正确的事件绑定代码"
+            },
+            // 第二波：错误数据处理
+            {
+                code: `// 第二波攻击：错误数据处理
+const numbers = [1, 2, 3, 4, 5];
+for (let i = 0; i < numbers.length; i++) {
+    numbers[i] = numbers[i] * 2;
+}`,
+                isThreat: true,
+                threatType: "错误数据处理",
+                description: "使用for循环而非数组方法"
+            },
+            {
+                code: `// 第二波攻击：正确数据处理
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(num => num * 2);`,
+                isThreat: false,
+                threatType: "正确数据处理",
+                description: "使用map方法处理数组"
+            },
+            // 第三波：频繁DOM操作
+            {
+                code: `// 第三波攻击：频繁DOM操作
+const container = document.getElementById("container");
+for (let i = 0; i < 10; i++) {
+    container.innerHTML += "<div>项目 " + i + "</div>";
+}`,
+                isThreat: true,
+                threatType: "频繁DOM操作",
+                description: "在循环中频繁操作innerHTML"
+            },
+            {
+                code: `// 第三波攻击：正确DOM操作
+const container = document.getElementById("container");
+const items = [];
+for (let i = 0; i < 10; i++) {
+    items.push("<div>项目 " + i + "</div>");
+}
+container.innerHTML = items.join("");`,
+                isThreat: false,
+                threatType: "正确DOM操作",
+                description: "批量更新innerHTML"
+            }
+        ];
+        
+        // 初始化航标点亮挑战
+        function initBeaconBattle() {
+            document.getElementById('start-beacon-defense').addEventListener('click', startBeaconDefense);
+            document.getElementById('beacon-show-guide').addEventListener('click', showBeaconGuide);
+            document.getElementById('beacon-restart-defense').addEventListener('click', restartBeaconDefense);
+            document.getElementById('beacon-fix-btn').addEventListener('click', () => handleBeaconDefenseAction(true));
+            document.getElementById('beacon-ignore-btn').addEventListener('click', () => handleBeaconDefenseAction(false));
+            
+            // 初始化航标显示
+            updateBeaconUI();
+        }
+        
+        // 开始航标点亮挑战
+        function startBeaconDefense() {
+            beaconStatus = 100;
+            beaconWave = 0;
+            updateBeaconUI();
+            
+            document.getElementById('start-beacon-defense').style.display = 'none';
+            document.getElementById('beacon-restart-defense').style.display = 'none';
+            document.getElementById('beacon-show-guide').style.display = 'none';
+            document.getElementById('beacon-defense-result').style.display = 'none';
+            
+            // 重置小船动画
+            const shipAnimation = document.getElementById('ship-animation');
+            shipAnimation.className = 'ship-animation ship-success';
+            shipAnimation.textContent = '⛵';
+            
+            startNextBeaconWave();
+        }
+        
+        // 开始下一波航标攻击
+        function startNextBeaconWave() {
+            beaconWave++;
+            updateBeaconWaveIndicator();
+            
+            if (beaconWave > 3) {
+                endBeaconDefense();
+                return;
+            }
+            
+            // 随机选择当前波的攻击脚本
+            const waveScripts = attackScripts.filter(script => {
+                if (beaconWave === 1) return script.threatType.includes("事件绑定");
+                if (beaconWave === 2) return script.threatType.includes("数据处理");
+                if (beaconWave === 3) return script.threatType.includes("DOM操作");
+                return false;
+            });
+            
+            beaconCurrentScript = waveScripts[Math.floor(Math.random() * waveScripts.length)];
+            displayBeaconScript(beaconCurrentScript);
+            
+            // 开始倒计时
+            startBeaconTimer();
+        }
+        
+        // 显示航标攻击
+        function displayBeaconScript(script) {
+            const scriptAttack = document.getElementById('beacon-script-attack');
+            const scriptContent = document.getElementById('beacon-script-content');
+            
+            scriptContent.innerHTML = script.code;
+            scriptAttack.classList.add('active');
+            
+            // 如果是威胁，添加威胁标记
+            if (script.isThreat) {
+                scriptContent.innerHTML = script.code.replace(
+                    script.threatType, 
+                    `<span class="script-threat">${script.threatType}</span>`
+                );
+            }
+        }
+        
+        // 开始航标计时器
+        function startBeaconTimer() {
+            isBeaconActive = true;
+            let beaconTimerValue = 5;
+            updateBeaconTimerDisplay(beaconTimerValue);
+            
+            beaconTimer = setInterval(() => {
+                beaconTimerValue--;
+                updateBeaconTimerDisplay(beaconTimerValue);
+                
+                if (beaconTimerValue <= 0) {
+                    clearInterval(beaconTimer);
+                    handleBeaconTimeout();
+                }
+            }, 1000);
+        }
+        
+        // 处理航标防御动作
+        function handleBeaconDefenseAction(isFix) {
+            if (!isBeaconActive) return;
+            
+            clearInterval(beaconTimer);
+            isBeaconActive = false;
+            
+            const isCorrect = (isFix && beaconCurrentScript.isThreat) || (!isFix && !beaconCurrentScript.isThreat);
+            
+            if (isCorrect) {
+                // 正确操作
+                if (beaconCurrentScript.isThreat) {
+                    showBeaconResult("成功修复威胁！航标状态保持不变", "defense-success");
+                } else {
+                    showBeaconResult("正确保留代码！航标状态保持不变", "defense-success");
+                }
+            } else {
+                // 错误操作
+                beaconStatus -= 20;
+                updateBeaconUI();
+                
+                if (beaconCurrentScript.isThreat) {
+                    showBeaconResult(`错误！放过威胁：${beaconCurrentScript.description}，航标状态-20%`, "defense-failure");
+                } else {
+                    showBeaconResult(`错误！误删正确代码：${beaconCurrentScript.description}，航标状态-20%`, "defense-failure");
+                }
+            }
+            
+            // 延迟后进入下一波
+            setTimeout(() => {
+                document.getElementById('beacon-script-attack').classList.remove('active');
+                document.getElementById('beacon-defense-result').style.display = 'none';
+                startNextBeaconWave();
+            }, 2000);
+        }
+        
+        // 处理航标超时
+        function handleBeaconTimeout() {
+            isBeaconActive = false;
+            
+            if (beaconCurrentScript.isThreat) {
+                beaconStatus -= 20;
+                updateBeaconUI();
+                showBeaconResult(`超时！放过威胁：${beaconCurrentScript.description}，航标状态-20%`, "defense-failure");
+            } else {
+                showBeaconResult("超时！正确代码未受影响", "defense-success");
+            }
+            
+            // 延迟后进入下一波
+            setTimeout(() => {
+                document.getElementById('beacon-script-attack').classList.remove('active');
+                document.getElementById('beacon-defense-result').style.display = 'none';
+                startNextBeaconWave();
+            }, 2000);
+        }
+        
+        // 结束航标点亮挑战
+        function endBeaconDefense() {
+            document.getElementById('start-beacon-defense').style.display = 'none';
+            document.getElementById('beacon-restart-defense').style.display = 'inline-block';
+            document.getElementById('beacon-show-guide').style.display = 'inline-block';
+            
+            if (beaconStatus >= 80) {
+                showBeaconResult("🎉 点亮成功！小船安全渡岸！", "defense-success");
+                
+                // 点亮所有航标
+                for (let i = 1; i <= 5; i++) {
+                    lightBeacon(`beacon-${i}`);
+                }
+                
+                // 点亮HTML场景的航标
+                lightBeacon('html-beacon');
+                
+                // 播放小船成功动画
+                playShipSuccessAnimation();
+                
+                // 更新验证面板
+                updateValidationPanel(true);
+            } else {
+                showBeaconResult(`💔 点亮失败！航标状态仅剩${beaconStatus}%，小船沉没！`, "defense-failure");
+                
+                // 熄灭所有航标
+                for (let i = 1; i <= 5; i++) {
+                    dimBeacon(`beacon-${i}`);
+                }
+                
+                // 播放小船失败动画
+                playShipFailureAnimation();
+            }
+        }
+        
+        // 播放小船成功动画
+        function playShipSuccessAnimation() {
+            const shipAnimation = document.getElementById('ship-animation');
+            
+            // 添加成功闪烁效果
+            createSuccessSparkles();
+            
+            // 小船移动动画
+            setTimeout(() => {
+                shipAnimation.classList.remove('ship-success');
+                shipAnimation.classList.add('ship-crossing');
+                
+                // 添加胜利特效
+                setTimeout(() => {
+                    shipAnimation.textContent = '⛵✨';
+                    shipAnimation.style.filter = 'drop-shadow(0 0 15px #ffcc00)';
+                }, 1000);
+            }, 500);
+        }
+        
+        // 播放小船失败动画
+        function playShipFailureAnimation() {
+            const shipAnimation = document.getElementById('ship-animation');
+            
+            // 小船爆炸动画
+            shipAnimation.classList.add('ship-explosion');
+            shipAnimation.textContent = '💥';
+            
+            // 爆炸后变成水
+            setTimeout(() => {
+                shipAnimation.classList.remove('ship-explosion');
+                shipAnimation.classList.add('ship-sunk');
+                shipAnimation.textContent = '💧';
+            }, 500);
+        }
+        
+        // 创建成功闪烁效果
+        function createSuccessSparkles() {
+            const animationArea = document.querySelector('.ship-animation-area');
+            const sparklesContainer = document.createElement('div');
+            sparklesContainer.className = 'success-sparkles';
+            animationArea.appendChild(sparklesContainer);
+            
+            for (let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                sparklesContainer.appendChild(sparkle);
+            }
+            
+            // 清理闪烁效果
+            setTimeout(() => {
+                sparklesContainer.remove();
+            }, 3000);
+        }
+        
+        // 重新开始航标点亮挑战
+        function restartBeaconDefense() {
+            document.getElementById('beacon-defense-result').style.display = 'none';
+            startBeaconDefense();
+        }
+        
+        // 显示航标帮助
+        function showBeaconGuide() {
+            const guide = document.createElement('div');
+            guide.className = 'defense-guide';
+            guide.innerHTML = `
+                <div class="guide-title">💡 点亮指南</div>
+                <div class="guide-rule">事件监听：优先使用 addEventListener</div>
+                <div class="guide-rule">数据处理：善用 map/filter/reduce</div>
+                <div class="guide-rule">动态更新：避免频繁操作 innerHTML</div>
+                <div class="guide-rule">表单验证：实时校验 + 错误提示</div>
+                <div class="guide-rule">动画优化：使用 requestAnimationFrame 或 transition</div>
+            `;
+            
+            // 如果已经存在指南，则移除
+            const existingGuide = document.querySelector('#html-task .defense-guide');
+            if (existingGuide) {
+                existingGuide.remove();
+            }
+            
+            document.querySelector('#html-task .defense-challenge').appendChild(guide);
+            guide.style.display = 'block';
+        }
+        
+        // 更新航标点亮挑战UI
+        function updateBeaconUI() {
+            document.getElementById('beacon-status').textContent = `${beaconStatus}%`;
+            document.getElementById('beacon-fill').style.width = `${beaconStatus}%`;
+            document.querySelector('.beacon-status').textContent = `${beaconStatus}%`;
+            
+            // 根据航标状态改变颜色
+            const beaconBar = document.getElementById('beacon-fill');
+            if (beaconStatus >= 80) {
+                beaconBar.style.background = 'linear-gradient(90deg, #aaffaa, #88ff88)';
+            } else if (beaconStatus >= 50) {
+                beaconBar.style.background = 'linear-gradient(90deg, #ffcc00, #ff9900)';
+            } else {
+                beaconBar.style.background = 'linear-gradient(90deg, #ff6600, #ff3300)';
+            }
+            
+            // 更新航标点亮状态
+            const litCount = Math.floor(beaconStatus / 20);
+            for (let i = 1; i <= 5; i++) {
+                const beacon = document.getElementById(`beacon-${i}`);
+                if (i <= litCount) {
+                    beacon.classList.add('lit');
+                } else {
+                    beacon.classList.remove('lit');
+                }
+            }
+        }
+        
+        // 更新航标波次指示器
+        function updateBeaconWaveIndicator() {
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`beacon-wave-${i}`);
+                if (i <= beaconWave) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            }
+        }
+        
+        // 更新航标计时器显示
+        function updateBeaconTimerDisplay(value) {
+            document.getElementById('beacon-timer').textContent = value;
+        }
+        
+        // 显示航标点亮挑战结果
+        function showBeaconResult(message, className) {
+            const result = document.getElementById('beacon-defense-result');
+            result.textContent = message;
+            result.className = `defense-result ${className}`;
+            result.style.display = 'block';
+        }
+        
+        // 验证面板帮助系统
+        function getValidationHelp(level) {
+            if (goldCoins < level) {
+                alert('金币不足！请完成更多任务来获取金币。');
+                return;
+            }
+
+            goldCoins -= level;
+            updateUI();
+
+            let helpMessage = '';
+
+            switch(level) {
+                case 1:
+                    helpMessage = "删除指导：\n- 删除无效的事件绑定\n- 删除错误的DOM操作\n- 删除不合适的数组处理方法";
+                    break;
+                case 2:
+                    helpMessage = "防御指导：\n- 优先使用addEventListener\n- 善用map/filter/reduce\n- 避免频繁操作innerHTML\n- 实现实时表单验证\n- 使用requestAnimationFrame优化动画";
+                    break;
+                case 3:
+                    helpMessage = "重置代码：\n将重置所有防御挑战进度";
+                    restartBeaconDefense();
+                    break;
+            }
+
+            alert(helpMessage);
+        }
+        
+        // 更新验证面板
+        function updateValidationPanel(isSuccess) {
+            const checks = ['check-event', 'check-data', 'check-dom', 'check-form', 'check-animation'];
+            
+            checks.forEach(checkId => {
+                const check = document.getElementById(checkId);
+                check.textContent = isSuccess ? '✓' : '✗';
+                check.className = `validation-check ${isSuccess ? 'valid' : 'invalid'}`;
+            });
+        }
+
+        // 选项卡功能 - 修改以支持场景切换
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    const sceneId = button.getAttribute('data-scene');
+                    
+                    // 移除所有活动状态
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    button.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // 切换场景
+                    if (sceneId) {
+                        // 隐藏所有场景
+                        document.querySelectorAll('.scene-js, .scene-html').forEach(scene => {
+                            scene.style.display = 'none';
+                        });
+                        
+                        // 显示对应场景
+                        document.getElementById(sceneId).style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // 初始化
+        function init() {
+            updateUI();
+            executeJSCode();
+            createSparkles();
+            initBeaconBattle();
+            initTabs();
+            
+            // 添加代码更改监听
+            document.getElementById('js-code').addEventListener('input', function() {
+                executeJSCode();
+            });
+            
+            // 显示新手指导
+            setTimeout(() => {
+                showTutorial();
+            }, 500);
+        }
+
+        // 启动游戏
+        init();
+    </script>
+</body>
+</html>

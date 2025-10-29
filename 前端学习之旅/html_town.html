@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML镇 - 语义化冒险之旅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 赛博朋克网格背景 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(16, 1, 32, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 1, 32, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(16, 1, 32, 0.85);
+            border-radius: 15px;
+            box-shadow: 
+                0 0 20px rgba(111, 0, 255, 0.5),
+                0 0 40px rgba(111, 0, 255, 0.3),
+                inset 0 0 20px rgba(111, 0, 255, 0.2);
+            overflow: hidden;
+            border: 1px solid #6f00ff;
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 50%, rgba(111, 0, 255, 0.1) 50%),
+                linear-gradient(transparent 50%, rgba(111, 0, 255, 0.1) 50%);
+            background-size: 10px 10px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #6f00ff, #8e2de2);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #ff00ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(111, 0, 255, 0.5);
+            box-shadow: 0 0 10px rgba(111, 0, 255, 0.3);
+        }
+
+        .game-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 700px;
+        }
+
+        @media (max-width: 768px) {
+            .game-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scene-container {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #6f00ff;
+            box-shadow: 0 0 15px rgba(111, 0, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scene-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(111, 0, 255, 0.1) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(111, 0, 255, 0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .pixel-scene {
+            background: #0a0014;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ff00ff;
+            box-shadow: inset 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .character-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            height: 120px;
+        }
+
+        .dragon {
+            font-size: 60px;
+            filter: drop-shadow(0 0 10px #ff0000);
+            animation: dragonBreath 3s infinite;
+            transform: scaleX(-1);
+        }
+
+        .princess {
+            font-size: 50px;
+            filter: drop-shadow(0 0 10px #00ffff);
+            animation: princessFloat 4s infinite;
+        }
+
+        @keyframes dragonBreath {
+            0%, 100% { transform: scaleX(-1) translateY(0); }
+            50% { transform: scaleX(-1) translateY(-10px); }
+        }
+
+        @keyframes princessFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .task-container {
+            background: rgba(16, 1, 32, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .task-title {
+            color: #ff00ff;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            border-bottom: 2px solid rgba(111, 0, 255, 0.5);
+            padding-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
+        }
+
+        /* 守卫战特定样式 */
+        .defense-area {
+            background: rgba(10, 0, 20, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 200px;
+            border: 1px solid #6f00ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shield-meter {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            border: 1px solid #6f00ff;
+        }
+
+        .shield-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            border-radius: 10px;
+            width: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .tag-attack {
+            position: absolute;
+            right: -200px;
+            padding: 10px 15px;
+            background: rgba(111, 0, 255, 0.3);
+            border-radius: 5px;
+            border: 1px solid #6f00ff;
+            box-shadow: 0 0 10px rgba(111, 0, 255, 0.5);
+            animation: attackMove 5s linear;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes attackMove {
+            0% { right: -200px; }
+            100% { right: 100%; }
+        }
+
+        .correct-tag {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 15px;
+            background: rgba(111, 0, 255, 0.3);
+            border-radius: 5px;
+            border: 1px solid #6f00ff;
+            box-shadow: 0 0 10px rgba(111, 0, 255, 0.5);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .correct-tag.protected {
+            animation: glow 1s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(111, 0, 255, 0.5); }
+            to { box-shadow: 0 0 20px rgba(111, 0, 255, 1); }
+        }
+
+        .code-editor {
+            background: #0a0014;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #b8b8ff;
+            font-size: 0.9em;
+        }
+
+        textarea.code-area {
+            width: 100%;
+            height: 400px;
+            background: #050010;
+            border: 1px solid #6f00ff;
+            border-radius: 5px;
+            padding: 15px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(111, 0, 255, 0.3);
+        }
+
+        .fairy-assistant {
+            background: linear-gradient(135deg, #ff66cc, #cc00ff);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: white;
+            border: 1px solid #ffccff;
+            box-shadow: 0 0 15px rgba(255, 204, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fairy-assistant::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .fairy-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .fairy-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffccff, #ff66cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #8e2de2;
+            box-shadow: 0 0 15px #ffccff;
+            font-size: 1.2em;
+        }
+
+        .help-levels {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .help-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .help-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .help-btn:hover::before {
+            left: 100%;
+        }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .help-btn.level-1 { 
+            border-left: 3px solid #aaffaa;
+            box-shadow: 0 0 10px rgba(170, 255, 170, 0.5);
+        }
+        .help-btn.level-2 { 
+            border-left: 3px solid #ffffaa;
+            box-shadow: 0 0 10px rgba(255, 255, 170, 0.5);
+        }
+        .help-btn.level-3 { 
+            border-left: 3px solid #ffaaaa;
+            box-shadow: 0 0 10px rgba(255, 170, 170, 0.5);
+        }
+
+        .fairy-response {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .code-snippet {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            color: #ffccff;
+            border: 1px solid rgba(255, 204, 255, 0.3);
+        }
+
+        .insert-code-btn {
+            background: linear-gradient(135deg, #ff66cc, #cc00ff);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 102, 204, 0.5);
+        }
+
+        .insert-code-btn:hover {
+            background: linear-gradient(135deg, #ff99dd, #dd33ff);
+            box-shadow: 0 0 15px rgba(255, 102, 204, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: #6f00ff;
+            color: white;
+            box-shadow: 0 0 15px rgba(111, 0, 255, 0.5);
+        }
+
+        .btn-success {
+            background: #00ff00;
+            color: #0a0014;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-warning {
+            background: #ffcc00;
+            color: #0a0014;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .completion-badge {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #0a0014;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+            animation: pulse 2s infinite;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(0, 255, 0, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
+        }
+
+        .feedback-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .feedback-error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .scene-content {
+            color: #b8b8ff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 霓虹文字效果 */
+        .neon-text {
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 15px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 25px #ff00ff;
+            animation: neon-flicker 2s infinite alternate;
+        }
+
+        @keyframes neon-flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 
+                    0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 15px #ff00ff,
+                    0 0 20px #ff00ff,
+                    0 0 25px #ff00ff;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        /* 赛博朋克扫描线效果 */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 51%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .wave-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(111, 0, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            border: 1px solid #6f00ff;
+            box-shadow: 0 0 10px #6f00ff;
+        }
+
+        .guide-panel {
+            background: rgba(42, 10, 74, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #6f00ff;
+            display: none;
+        }
+
+        .guide-panel h3 {
+            color: #ff00ff;
+            margin-bottom: 10px;
+        }
+
+        .guide-panel ul {
+            padding-left: 20px;
+        }
+
+        .guide-panel li {
+            margin: 5px 0;
+            color: #b8b8ff;
+        }
+
+        .score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(111, 0, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            border: 1px solid #6f00ff;
+            box-shadow: 0 0 10px #6f00ff;
+        }
+
+        .hint-panel {
+            background: rgba(42, 10, 74, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #6f00ff;
+            text-align: center;
+        }
+
+        .hint-panel .hint-text {
+            color: #b8b8ff;
+            font-size: 0.9em;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #6f00ff;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: rgba(111, 0, 255, 0.3);
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #6f00ff;
+            box-shadow: 0 0 10px #6f00ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .gold-coin {
+            color: #ffcc00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffcc00;
+        }
+
+        .html-preview {
+            background: rgba(10, 0, 20, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 150px;
+            border: 1px solid #6f00ff;
+            color: #b8b8ff;
+            text-align: left;
+            font-size: 0.9em;
+            overflow: auto;
+            box-shadow: inset 0 0 10px rgba(111, 0, 255, 0.3);
+        }
+
+        .validation-panel {
+            background: rgba(42, 10, 74, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #6f00ff;
+        }
+
+        .validation-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .validation-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .validation-icon.pass {
+            background: #00ff00;
+            color: #0a0014;
+        }
+
+        .validation-icon.fail {
+            background: #ff0000;
+            color: white;
+        }
+
+        .validation-text {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .tag-fragment {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background: rgba(111, 0, 255, 0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid #6f00ff;
+            transition: all 0.3s;
+        }
+
+        .tag-fragment:hover {
+            background: rgba(111, 0, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .tag-fragment.correct {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        .tag-fragment.incorrect {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+
+        .game-mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(111, 0, 255, 0.3);
+            border: 1px solid #6f00ff;
+            border-radius: 5px;
+            color: #e0e0ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .mode-btn.active {
+            background: #6f00ff;
+            box-shadow: 0 0 10px #6f00ff;
+        }
+
+        .mode-btn:hover {
+            background: rgba(111, 0, 255, 0.5);
+        }
+        
+        /* 新手指导样式 */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .tutorial-container {
+            max-width: 800px;
+            width: 90%;
+            background: rgba(16, 1, 32, 0.95);
+            border-radius: 15px;
+            border: 2px solid #6f00ff;
+            box-shadow: 
+                0 0 30px rgba(111, 0, 255, 0.7),
+                inset 0 0 20px rgba(111, 0, 255, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tutorial-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(111, 0, 255, 0.1) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(111, 0, 255, 0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .tutorial-content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+
+        .tutorial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(111, 0, 255, 0.5);
+        }
+
+        .tutorial-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .tutorial-skip {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+            border: 1px solid #ff6666;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tutorial-skip:hover {
+            background: rgba(255, 0, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .tutorial-body {
+            min-height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .tutorial-step h3 {
+            color: #ff00ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
+        }
+
+        .tutorial-step p, .tutorial-step li {
+            color: #b8b8ff;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-step ul, .tutorial-step ol {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+
+        .tutorial-step li {
+            margin-bottom: 8px;
+        }
+
+        .tutorial-step strong {
+            color: #00ffff;
+        }
+
+        .tutorial-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .tutorial-controls .btn {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 新手指导遮罩层 -->
+    <div id="tutorial-overlay" style="display: none;">
+        <div class="tutorial-container">
+            <div class="tutorial-content">
+                <div class="tutorial-header">
+                    <h2 class="neon-text">🏰 HTML镇新手指导</h2>
+                    <button class="tutorial-skip" onclick="skipTutorial()">跳过指导</button>
+                </div>
+                <div class="tutorial-body">
+                    <div class="tutorial-step" id="tutorial-step-1">
+                        <h3>欢迎来到HTML镇！</h3>
+                        <p>这是一个学习HTML语义化的冒险游戏。你将通过修复网页结构和防御语义攻击来学习HTML知识。</p>
+                        <p>游戏分为三个主要模式：</p>
+                        <ul>
+                            <li><strong>主线任务</strong> - 修复被破坏的网页结构</li>
+                            <li><strong>语义守卫战</strong> - 防御小恶魔的语义污染攻击</li>
+                            <li><strong>验证面板</strong> - 检查你的代码是否符合标准</li>
+                        </ul>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-2" style="display: none;">
+                        <h3>游戏界面介绍</h3>
+                        <p>左侧是<strong>场景预览区</strong>，显示游戏场景和HTML预览。</p>
+                        <p>右侧是<strong>任务区</strong>，包含任务说明、代码编辑器和控制按钮。</p>
+                        <p>右上角显示你的<strong>游戏进度和金币数量</strong>。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-3" style="display: none;">
+                        <h3>主线任务模式</h3>
+                        <p>在这个模式中，你需要修复被破坏的HTML代码：</p>
+                        <ol>
+                            <li>找到并修正标签拼写错误</li>
+                            <li>添加正确的语义化标签</li>
+                            <li>完善ARIA属性</li>
+                            <li>通过所有验证测试</li>
+                        </ol>
+                        <p>使用<strong>测试代码</strong>按钮检查进度，<strong>提交关卡</strong>完成任务。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-4" style="display: none;">
+                        <h3>语义守卫战</h3>
+                        <p>在这个模式中，你需要防御小恶魔的语义污染攻击：</p>
+                        <ul>
+                            <li>点击<strong>污染标签</strong>进行净化</li>
+                            <li>保护<strong>正确标签</strong>不被误删</li>
+                            <li>保持护盾值≥80%才能通关</li>
+                        </ul>
+                        <p>记住每个波次的语义规则，正确判断哪些标签需要净化。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-5" style="display: none;">
+                        <h3>仙女帮助系统</h3>
+                        <p>当你遇到困难时，可以使用仙女帮助系统：</p>
+                        <ul>
+                            <li><strong>线索提示</strong> (1金币) - 获得解决问题的关键线索</li>
+                            <li><strong>思路指导</strong> (2金币) - 获得详细的解决思路</li>
+                            <li><strong>完整代码</strong> (3金币) - 获得完整的解决方案</li>
+                        </ul>
+                        <p>通过完成任务和守卫战可以获得更多金币。</p>
+                    </div>
+                    <div class="tutorial-step" id="tutorial-step-6" style="display: none;">
+                        <h3>开始冒险！</h3>
+                        <p>现在你已经了解了游戏的基本玩法，可以开始你的HTML语义化冒险了！</p>
+                        <p>记住：语义化HTML不仅能让代码更清晰，还能提高网站的可访问性和SEO效果。</p>
+                        <p>祝你在HTML镇的冒险愉快！</p>
+                    </div>
+                </div>
+                <div class="tutorial-controls">
+                    <button class="btn btn-warning" id="tutorial-prev" onclick="prevTutorialStep()" style="display: none;">上一步</button>
+                    <button class="btn btn-primary" id="tutorial-next" onclick="nextTutorialStep()">下一步</button>
+                    <button class="btn btn-success" id="tutorial-finish" onclick="finishTutorial()" style="display: none;">开始游戏</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="scanlines"></div>
+        <div class="game-header">
+            <div class="header-content">
+                <h1 class="neon-text">🏰 HTML镇 - 语义化冒险之旅</h1>
+                <div class="player-stats">
+                    <div class="stat">关卡: <span id="current-level">1/3</span></div>
+                    <div class="stat">金币: <span class="gold-coin" id="gold-count">10</span> 🪙</div>
+                    <div class="stat">进度: <span id="progress">0%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-body">
+            <!-- 左侧：游戏场景 -->
+            <div class="scene-container">
+                <h2>🖼️ 场景预览</h2>
+                <div class="pixel-scene">
+                    <div class="character-container">
+                        <div class="dragon">🐉</div>
+                        <div class="princess">👸</div>
+                    </div>
+                    <div class="scene-content" id="scene-content">
+                        <h3>欢迎来到HTML镇！</h3>
+                        <p>页面公主的标题被恶龙偷走了！请修复网页结构...</p>
+                    </div>
+                    
+                    <!-- 语义守卫战区域 -->
+                    <div class="defense-area" id="defense-area" style="display: none;">
+                        <div class="wave-indicator" id="wave-indicator">第1波攻击</div>
+                        <div class="score-display" id="score-display">得分: 0</div>
+                        <div class="shield-meter">
+                            <div class="shield-fill" id="shield-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="correct-tag" id="correct-tag">&lt;h1&gt;HTML镇欢迎你&lt;/h1&gt;</div>
+                        <!-- 攻击标签将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <!-- HTML预览区域 -->
+                    <div class="html-preview" id="html-preview">
+                        <!-- HTML预览将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：任务和代码编辑 -->
+            <div class="task-container">
+                <div class="game-mode-selector">
+                    <div class="mode-btn active" data-mode="main">主线任务</div>
+                    <div class="mode-btn" data-mode="defense">语义守卫战</div>
+                    <div class="mode-btn" data-mode="validation">验证面板</div>
+                </div>
+
+                <!-- 主线任务 -->
+                <div class="tab-content active" id="main-tab">
+                    <h2 class="task-title">📝 主线任务 - 找回失踪的标题</h2>
+                    <div class="task-description">
+                        <p>页面公主的招牌&lt;h1&gt;标题被小恶魔偷走了！请完成以下任务：</p>
+                        <ul class="task-steps">
+                            <li>在代码森林中找到正确的&lt;h1&gt;标签碎片</li>
+                            <li>将碎片拖入index.html的&lt;body&gt;最顶部</li>
+                            <li>补全&lt;title&gt;标签内容</li>
+                            <li>添加语义化标签和ARIA属性</li>
+                            <li>通过结构检查仪和屏幕阅读器测试</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-editor">
+                        <div class="editor-header">
+                            <span>📄 index.html</span>
+                            <span>HTML5</span>
+                        </div>
+                        <textarea class="code-area" id="html-code" placeholder="在这里编写你的HTML代码...">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <<tittle>HTML镇</tittle>
+</head>
+<body>
+    <!-- 在这里添加标题 -->
+    
+    <p>欢迎来到HTML镇！这里曾经有一个漂亮的标题...</p>
+</body>
+</html></textarea>
+                    </div>
+                </div>
+
+                <!-- 语义守卫战 -->
+                <div class="tab-content" id="defense-tab">
+                    <h2 class="task-title">🛡️ 语义守卫战</h2>
+                    <div class="task-description">
+                        <p>小恶魔正在发动语义污染攻击！你需要：</p>
+                        <ul class="task-steps">
+                            <li>点击<strong>污染标签</strong>进行净化</li>
+                            <li>保护<strong>正确标签</strong>不被误删</li>
+                            <li>保持护盾值≥80%才能通关</li>
+                        </ul>
+                        
+                        <div class="hint-panel">
+                            <div class="hint-text" id="current-hint">当前规则：一个页面只能有一个&lt;h1&gt;标签</div>
+                        </div>
+
+                        <p><strong>攻击波次：</strong></p>
+                        <ol>
+                            <li>第一波：重复h1标签 + 其他正确标题</li>
+                            <li>第二波：伪装标签 + 正确语义标签</li>
+                            <li>第三波：错误嵌套 + 正确嵌套</li>
+                        </ol>
+                    </div>
+
+                    <div class="guide-panel" id="guide-panel">
+                        <h3>防御指南 - 语义化规则</h3>
+                        <ul>
+                            <li><strong>一个页面只能有一个&lt;h1&gt;标签</strong></li>
+                            <li>不要用div、p等标签伪装成标题</li>
+                            <li>避免在段落内嵌套标题标签</li>
+                            <li>h2-h6可以用于副标题</li>
+                            <li>保持语义化结构的清晰和唯一性</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 验证面板 -->
+                <div class="tab-content" id="validation-tab">
+                    <h2 class="task-title">🔧 验证面板</h2>
+                    <div class="validation-panel">
+                        <div class="validation-item">
+                            <div class="validation-icon fail">❌</div>
+                            <div class="validation-text">结构检查：&lt;h1&gt;标签位置</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-icon fail">❌</div>
+                            <div class="validation-text">标题内容：长度和关键词检查</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-icon fail">❌</div>
+                            <div class="validation-text">ARIA属性：role和aria-label</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-icon fail">❌</div>
+                            <div class="validation-text">屏幕阅读器：完整播报测试</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-icon fail">❌</div>
+                            <div class="validation-text">标签拼写：&lt;title&gt;修正</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fairy-assistant">
+                    <div class="fairy-header">
+                        <div class="fairy-avatar">🧚‍♀️</div>
+                        <h3>仙女下凡</h3>
+                    </div>
+                    <p>🧚‍♀️ 遇到困难吗？请你支付金币给我</p>
+                    <div class="help-levels">
+                        <button class="help-btn level-1" onclick="getHelp(1)">
+                            💡 线索提示 (1🪙)
+                        </button>
+                        <button class="help-btn level-2" onclick="getHelp(2)">
+                            🎯 思路指导 (2🪙)
+                        </button>
+                        <button class="help-btn level-3" onclick="getHelp(3)">
+                            🔧 完整代码 (3🪙)
+                        </button>
+                    </div>
+                    <div class="fairy-response" id="fairy-response">
+                        <!-- 仙女回复内容 -->
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-warning" onclick="resetCode()">🔄 重置代码</button>
+                    <button class="btn btn-primary" onclick="testCode()">🧪 测试代码</button>
+                    <button class="btn btn-success" onclick="submitCode()">🚀 提交关卡</button>
+                    <button class="btn btn-primary" id="defense-btn" onclick="startDefense()">🛡️ 开始守卫</button>
+                </div>
+
+                <div class="completion-badge" id="completion-badge">
+                    ✅ 任务完成！公主已获救，准备前往下一关...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 新手指导状态
+        const tutorialState = {
+            currentStep: 1,
+            totalSteps: 6,
+            completed: false
+        };
+
+        // 显示新手指导
+        function showTutorial() {
+            // 检查是否已经完成过指导
+            const tutorialCompleted = localStorage.getItem('htmlTownTutorialCompleted');
+            
+            if (tutorialCompleted === 'true') {
+                return; // 如果已经完成过，则不显示
+            }
+            
+            document.getElementById('tutorial-overlay').style.display = 'flex';
+            updateTutorialStep();
+        }
+
+        // 更新新手指导步骤
+        function updateTutorialStep() {
+            // 隐藏所有步骤
+            for (let i = 1; i <= tutorialState.totalSteps; i++) {
+                document.getElementById(`tutorial-step-${i}`).style.display = 'none';
+            }
+            
+            // 显示当前步骤
+            document.getElementById(`tutorial-step-${tutorialState.currentStep}`).style.display = 'block';
+            
+            // 更新按钮状态
+            const prevBtn = document.getElementById('tutorial-prev');
+            const nextBtn = document.getElementById('tutorial-next');
+            const finishBtn = document.getElementById('tutorial-finish');
+            
+            if (tutorialState.currentStep === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                finishBtn.style.display = 'none';
+            } else if (tutorialState.currentStep === tutorialState.totalSteps) {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'none';
+                finishBtn.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+                finishBtn.style.display = 'none';
+            }
+        }
+
+        // 下一步
+        function nextTutorialStep() {
+            if (tutorialState.currentStep < tutorialState.totalSteps) {
+                tutorialState.currentStep++;
+                updateTutorialStep();
+            }
+        }
+
+        // 上一步
+        function prevTutorialStep() {
+            if (tutorialState.currentStep > 1) {
+                tutorialState.currentStep--;
+                updateTutorialStep();
+            }
+        }
+
+        // 完成指导
+        function finishTutorial() {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+            tutorialState.completed = true;
+            
+            // 将完成状态保存到本地存储
+            localStorage.setItem('htmlTownTutorialCompleted', 'true');
+            
+            // 显示欢迎消息
+            showFeedback('🎉 欢迎来到HTML镇！开始你的语义化冒险吧！', 'success');
+        }
+
+        // 跳过指导
+        function skipTutorial() {
+            if (confirm('确定要跳过新手指导吗？你可以在设置中重新查看指导。')) {
+                finishTutorial();
+            }
+        }
+
+        // 游戏状态
+        const gameState = {
+            currentMode: 'main',
+            goldCoins: 10,
+            progress: 0,
+            currentLevel: 1,
+            maxLevels: 3,
+            
+            // 语义守卫战状态
+            shieldValue: 100,
+            currentWave: 0,
+            maxWaves: 3,
+            isDefending: false,
+            defenseScore: 0,
+            correctTag: '<h1>HTML镇欢迎你</h1>',
+            attacks: {
+                1: [
+                    { type: 'pollution', html: '<h1>假标题1</h1>', description: '重复h1标签' },
+                    { type: 'correct', html: '<h2>副标题1</h2>', description: '正确的h2标签' },
+                    { type: 'pollution', html: '<h1>重复标题</h1>', description: '重复h1标签' },
+                    { type: 'correct', html: '<h3>小标题</h3>', description: '正确的h3标签' },
+                    { type: 'pollution', html: '<h1>恶意标题</h1>', description: '重复h1标签' },
+                    { type: 'correct', html: '<h4>四级标题</h4>', description: '正确的h4标签' }
+                ],
+                2: [
+                    { type: 'pollution', html: '<div id="h1">伪装标题1</div>', description: 'div伪装标题' },
+                    { type: 'correct', html: '<nav>导航菜单</nav>', description: '正确的nav标签' },
+                    { type: 'pollution', html: '<p class="title">伪装标题2</p>', description: 'p伪装标题' },
+                    { type: 'correct', html: '<aside>侧边栏</aside>', description: '正确的aside标签' },
+                    { type: 'pollution', html: '<span style="font-size:24px">伪装标题3</span>', description: 'span伪装标题' },
+                    { type: 'correct', html: '<footer>页脚</footer>', description: '正确的footer标签' }
+                ],
+                3: [
+                    { type: 'pollution', html: '<p><h1>嵌套错误1</h1></p>', description: 'h1在p内嵌套' },
+                    { type: 'correct', html: '<section><h2>正确嵌套</h2></section>', description: 'h2在section内正确嵌套' },
+                    { type: 'pollution', html: '<div><h1>嵌套错误2</h1></div>', description: 'h1在div内嵌套' },
+                    { type: 'correct', html: '<article><h3>文章标题</h3></article>', description: 'h3在article内正确嵌套' },
+                    { type: 'pollution', html: '<span><h1>嵌套错误3</h1></span>', description: 'h1在span内嵌套' },
+                    { type: 'correct', html: '<main><p>主要内容</p></main>', description: 'p在main内正确嵌套' }
+                ]
+            },
+            hints: {
+                1: "当前规则：一个页面只能有一个&lt;h1&gt;标签",
+                2: "当前规则：不要用非语义化标签伪装标题",
+                3: "当前规则：避免在段落内嵌套标题标签"
+            }
+        };
+
+        // DOM元素
+        const defenseArea = document.getElementById('defense-area');
+        const shieldFill = document.getElementById('shield-fill');
+        const scoreDisplay = document.getElementById('score-display');
+        const waveIndicator = document.getElementById('wave-indicator');
+        const correctTag = document.getElementById('correct-tag');
+        const guidePanel = document.getElementById('guide-panel');
+        const completionBadge = document.getElementById('completion-badge');
+        const currentHint = document.getElementById('current-hint');
+        const sceneContent = document.getElementById('scene-content');
+        const htmlPreview = document.getElementById('html-preview');
+        const defenseBtn = document.getElementById('defense-btn');
+
+        // 更新UI显示
+        function updateUI() {
+            document.getElementById('gold-count').textContent = gameState.goldCoins;
+            document.getElementById('progress').textContent = gameState.progress + '%';
+            document.getElementById('current-level').textContent = `${gameState.currentLevel}/${gameState.maxLevels}`;
+            
+            // 更新守卫战UI
+            shieldFill.style.width = `${gameState.shieldValue}%`;
+            scoreDisplay.textContent = `得分: ${gameState.defenseScore}`;
+            
+            // 根据护盾值改变颜色
+            if (gameState.shieldValue >= 80) {
+                shieldFill.style.background = 'linear-gradient(90deg, #00ff00, #00cc00)';
+            } else if (gameState.shieldValue >= 50) {
+                shieldFill.style.background = 'linear-gradient(90deg, #ffff00, #ffcc00)';
+            } else {
+                shieldFill.style.background = 'linear-gradient(90deg, #ff0000, #cc0000)';
+            }
+        }
+
+        // 更新HTML预览
+        function updatePreview() {
+            const code = document.getElementById('html-code').value;
+            
+            try {
+                // 创建一个临时div来安全地渲染HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = code;
+                
+                // 清理预览区域
+                htmlPreview.innerHTML = '';
+                
+                // 提取body内容进行预览
+                const bodyMatch = code.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                if (bodyMatch && bodyMatch[1]) {
+                    htmlPreview.innerHTML = bodyMatch[1];
+                } else {
+                    htmlPreview.innerHTML = '<p style="color: #7f8c8d; text-align: center;">编写HTML代码后，预览将显示在这里</p>';
+                }
+                
+                // 添加一些基本样式使预览更美观
+                const style = document.createElement('style');
+                style.textContent = `
+                    #html-preview * {
+                        box-sizing: border-box;
+                    }
+                    #html-preview h1 {
+                        color: #00ffff;
+                        text-shadow: 0 0 10px #00ffff;
+                        margin-bottom: 15px;
+                    }
+                    #html-preview p {
+                        color: #b8b8ff;
+                        line-height: 1.5;
+                    }
+                    #html-preview header {
+                        background: rgba(111, 0, 255, 0.3);
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin-bottom: 15px;
+                        border: 1px solid #6f00ff;
+                    }
+                `;
+                htmlPreview.appendChild(style);
+                
+            } catch (error) {
+                htmlPreview.innerHTML = `<p style="color: #ff0000;">预览渲染错误: ${error.message}</p>`;
+            }
+        }
+
+        // 切换游戏模式
+        function setupModeSelector() {
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.getAttribute('data-mode');
+                    
+                    // 更新按钮状态
+                    modeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新内容显示
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${mode}-tab`).classList.add('active');
+                    
+                    // 更新游戏状态
+                    gameState.currentMode = mode;
+                    
+                    // 根据模式更新场景
+                    if (mode === 'defense') {
+                        sceneContent.innerHTML = `
+                            <h3>🛡️ 语义守卫战场</h3>
+                            <p>小恶魔的语义污染攻击！</p>
+                            <p>根据语义规则判断哪些标签需要净化</p>
+                            <p><strong>点击污染标签净化，保护正确标签</strong></p>
+                        `;
+                        defenseArea.style.display = 'block';
+                        defenseBtn.style.display = 'block';
+                    } else {
+                        sceneContent.innerHTML = `
+                            <h3>欢迎来到HTML镇！</h3>
+                            <p>页面公主的标题被恶龙偷走了！请修复网页结构...</p>
+                        `;
+                        defenseArea.style.display = 'none';
+                        defenseBtn.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // 仙女帮助系统
+        function getHelp(level) {
+            if (gameState.goldCoins < level) {
+                alert('金币不足！请完成更多任务来获取金币。');
+                return;
+            }
+
+            gameState.goldCoins -= level;
+            updateUI();
+
+            const response = document.getElementById('fairy-response');
+            let helpMessage = '';
+
+            switch(level) {
+                case 1:
+                    helpMessage = `
+                    💡 <strong>语义化标签提示：</strong>
+                    <ul>
+                        <li>使用&lt;h1&gt;作为主标题，不要用div或p标签替代</li>
+                        <li>将&lt;h1&gt;放在&lt;header&gt;标签内</li>
+                        <li>确保&lt;title&gt;和&lt;h1&gt;内容一致且包含"HTML镇"</li>
+                        <li>添加role="main"和aria-label属性</li>
+                    </ul>
+                    `;
+                    break;
+                case 2:
+                    helpMessage = `
+                    🎯 <strong>修复思路：</strong>
+                    <ol>
+                        <li>修正&lt;title&gt;标签的拼写错误</li>
+                        <li>在body内添加header元素</li>
+                        <li>在header内添加带ARIA属性的h1标题</li>
+                        <li>确保标题内容为"HTML镇欢迎你"</li>
+                        <li>测试屏幕阅读器播报效果</li>
+                    </ol>
+                    `;
+                    break;
+                case 3:
+                    helpMessage = `
+                    🔧 <strong>完整HTML代码示例：</strong>
+                    <div class="code-snippet">
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;HTML镇欢迎你&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;h1 role="main" aria-label="HTML镇欢迎你"&gt;HTML镇欢迎你&lt;/h1&gt;
+    &lt;/header&gt;
+    
+    &lt;p&gt;欢迎来到HTML镇！这里曾经有一个漂亮的标题...&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                    </div>
+                    <button class="insert-code-btn" onclick="insertFullCode()">插入完整代码</button>
+                    `;
+                    break;
+            }
+
+            response.innerHTML = helpMessage;
+            response.style.display = 'block';
+        }
+
+        // 插入完整代码
+        function insertFullCode() {
+            const fullCode = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML镇欢迎你</title>
+</head>
+<body>
+    <header>
+        <h1 role="main" aria-label="HTML镇欢迎你">HTML镇欢迎你</h1>
+    </header>
+    
+    <p>欢迎来到HTML镇！这里曾经有一个漂亮的标题...</p>
+</body>
+</html>`;
+            
+            document.getElementById('html-code').value = fullCode;
+            updatePreview();
+            
+            // 隐藏仙女响应
+            document.getElementById('fairy-response').style.display = 'none';
+            
+            // 显示成功消息
+            showFeedback('完整代码已插入到编辑器中！', 'success');
+        }
+
+        // 测试代码
+        function testCode() {
+            const code = document.getElementById('html-code').value;
+            updatePreview();
+            
+            try {
+                // 验证代码
+                const validationItems = document.querySelectorAll('.validation-item');
+                
+                // 1. 检查title标签拼写
+                const titleSpelling = !code.includes('<<tittle>') && code.includes('<title>');
+                validationItems[4].querySelector('.validation-icon').className = 
+                    `validation-icon ${titleSpelling ? 'pass' : 'fail'}`;
+                validationItems[4].querySelector('.validation-icon').textContent = titleSpelling ? '✓' : '❌';
+                
+                // 2. 检查h1标签位置和结构
+                const h1InHeader = code.includes('<header>') && 
+                    code.match(/<header[^>]*>[\s\S]*<h1/g);
+                validationItems[0].querySelector('.validation-icon').className = 
+                    `validation-icon ${h1InHeader ? 'pass' : 'fail'}`;
+                validationItems[0].querySelector('.validation-icon').textContent = h1InHeader ? '✓' : '❌';
+                
+                // 3. 检查标题内容
+                const titleMatch = code.match(/<title>([^<]*)<\/title>/);
+                const h1Match = code.match(/<h1[^>]*>([^<]*)<\/h1>/);
+                const titleContent = titleMatch && titleMatch[1].includes('HTML镇') && 
+                    titleMatch[1].length >= 8 && titleMatch[1].length <= 20;
+                const h1Content = h1Match && h1Match[1].includes('HTML镇') && 
+                    h1Match[1].length >= 8 && h1Match[1].length <= 20;
+                validationItems[1].querySelector('.validation-icon').className = 
+                    `validation-icon ${titleContent && h1Content ? 'pass' : 'fail'}`;
+                validationItems[1].querySelector('.validation-icon').textContent = titleContent && h1Content ? '✓' : '❌';
+                
+                // 4. 检查ARIA属性
+                const hasAria = code.includes('role="main"') && code.includes('aria-label=');
+                validationItems[2].querySelector('.validation-icon').className = 
+                    `validation-icon ${hasAria ? 'pass' : 'fail'}`;
+                validationItems[2].querySelector('.validation-icon').textContent = hasAria ? '✓' : '❌';
+                
+                // 5. 模拟屏幕阅读器测试
+                const screenReaderReady = h1InHeader && hasAria && titleContent && h1Content;
+                validationItems[3].querySelector('.validation-icon').className = 
+                    `validation-icon ${screenReaderReady ? 'pass' : 'fail'}`;
+                validationItems[3].querySelector('.validation-icon').textContent = screenReaderReady ? '✓' : '❌';
+
+                // 计算进度
+                const passedCount = document.querySelectorAll('.validation-icon.pass').length;
+                gameState.progress = Math.max(gameState.progress, (passedCount / 5) * 100);
+                updateUI();
+                
+                if (passedCount === 5) {
+                    showFeedback('✅ 所有验证通过！代码结构完美！', 'success');
+                } else {
+                    showFeedback(`通过了 ${passedCount}/5 项验证，请继续完善代码。`, 'error');
+                }
+                
+            } catch (error) {
+                showFeedback(`❌ 发现错误：${error.message}`, 'error');
+            }
+        }
+
+        // 提交代码
+        function submitCode() {
+            const code = document.getElementById('html-code').value;
+            
+            // 最终验证
+            const passedCount = document.querySelectorAll('.validation-icon.pass').length;
+            
+            if (passedCount === 5) {
+                gameState.progress = 100;
+                updateUI();
+                completionBadge.style.display = 'block';
+                
+                // 更新场景，显示公主获救
+                sceneContent.innerHTML = `
+                    <h3 style="color: #00ff00;">🎉 恭喜！标题已找回！</h3>
+                    <p>你成功修复了HTML结构，页面公主的标题恢复了！</p>
+                    <p>小镇恢复了往日的和平与秩序。</p>
+                `;
+                
+                // 更新角色容器，显示胜利场景
+                const characterContainer = document.querySelector('.character-container');
+                characterContainer.innerHTML = `
+                    <div class="dragon" style="filter: drop-shadow(0 0 5px #666); opacity: 0.5;">🐉</div>
+                    <div class="princess" style="filter: drop-shadow(0 0 15px #00ff00);">👸✨</div>
+                `;
+                
+                showFeedback('🎉 恭喜！你成功完成了HTML镇的挑战！', 'success');
+                
+                setTimeout(() => {
+                    alert('🎉 恭喜！你成功完成了HTML镇的挑战！\n获得奖励：语义化标签速查手册\n准备前往CSS谷...');
+                    // 这里可以添加跳转到下一关的逻辑
+                }, 2000);
+            } else {
+                showFeedback(`还需要完善代码！当前通过了 ${passedCount}/5 项验证。`, 'error');
+            }
+        }
+
+        // 重置代码
+        function resetCode() {
+            if (confirm('确定要重置代码吗？')) {
+                document.getElementById('html-code').value = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <<tittle>HTML镇</tittle>
+</head>
+<body>
+    <!-- 在这里添加标题 -->
+    
+    <p>欢迎来到HTML镇！这里曾经有一个漂亮的标题...</p>
+</body>
+</html>`;
+                gameState.progress = 0;
+                updateUI();
+                updatePreview();
+                sceneContent.innerHTML = `
+                    <h3>欢迎来到HTML镇！</h3>
+                    <p>页面公主的标题被恶龙偷走了！请修复网页结构...</p>
+                `;
+                
+                // 重置角色容器
+                const characterContainer = document.querySelector('.character-container');
+                characterContainer.innerHTML = `
+                    <div class="dragon">🐉</div>
+                    <div class="princess">👸</div>
+                `;
+                
+                // 重置验证面板
+                const validationIcons = document.querySelectorAll('.validation-icon');
+                validationIcons.forEach(icon => {
+                    icon.className = 'validation-icon fail';
+                    icon.textContent = '❌';
+                });
+                
+                showFeedback('代码已重置，可以重新开始挑战！', 'success');
+            }
+        }
+
+        // 显示反馈消息
+        function showFeedback(message, type) {
+            // 创建或获取反馈元素
+            let feedback = document.getElementById('action-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.id = 'action-feedback';
+                feedback.className = 'feedback-message';
+                document.querySelector('.controls').parentNode.insertBefore(feedback, document.querySelector('.controls'));
+            }
+            
+            feedback.textContent = message;
+            feedback.className = 'feedback-message';
+            feedback.classList.add(type === 'success' ? 'feedback-success' : 'feedback-error');
+            feedback.style.display = 'block';
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 3000);
+        }
+
+        // 语义守卫战功能
+        function startDefense() {
+            if (gameState.isDefending) return;
+            
+            gameState.isDefending = true;
+            gameState.currentWave = 1;
+            gameState.shieldValue = 100;
+            gameState.defenseScore = 0;
+            
+            updateUI();
+            updateHint();
+            startWave(1);
+            
+            showFeedback('第一波攻击开始！记住：一个页面只能有一个h1标签！', 'success');
+        }
+
+        // 开始攻击波
+        function startWave(waveNumber) {
+            gameState.currentWave = waveNumber;
+            updateUI();
+            updateHint();
+            
+            const attacks = gameState.attacks[waveNumber];
+            let attackCount = 0;
+            
+            // 清除之前的攻击标签
+            clearAttackTags();
+            
+            // 启动正确标签保护动画
+            correctTag.classList.add('protected');
+            
+            // 生成攻击标签
+            const attackInterval = setInterval(() => {
+                if (attackCount < attacks.length) {
+                    createAttackTag(attacks[attackCount]);
+                    attackCount++;
+                } else {
+                    clearInterval(attackInterval);
+                    
+                    // 6秒后检查是否进入下一波
+                    setTimeout(() => {
+                        if (gameState.currentWave < gameState.maxWaves) {
+                            const waveMessages = [
+                                '第二波攻击开始！注意伪装标签！',
+                                '第三波攻击开始！小心错误嵌套！'
+                            ];
+                            startWave(gameState.currentWave + 1);
+                            showFeedback(waveMessages[gameState.currentWave - 2], 'success');
+                        } else {
+                            endDefense();
+                        }
+                    }, 6000);
+                }
+            }, 1000);
+        }
+
+        // 创建攻击标签
+        function createAttackTag(attackData) {
+            const attackTag = document.createElement('div');
+            attackTag.className = 'tag-attack';
+            attackTag.innerHTML = attackData.html;
+            attackTag.style.top = `${Math.random() * 70 + 15}%`;
+            attackTag.setAttribute('data-type', attackData.type);
+            attackTag.setAttribute('data-description', attackData.description);
+            
+            // 添加点击事件
+            attackTag.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                const description = this.getAttribute('data-description');
+                
+                if (type === 'pollution') {
+                    // 正确点击污染标签
+                    this.style.background = 'rgba(0, 255, 0, 0.3)';
+                    this.style.borderColor = '#00ff00';
+                    setTimeout(() => {
+                        if (this.parentNode) this.remove();
+                    }, 300);
+                    increaseShield(8);
+                    gameState.defenseScore += 10;
+                    showFeedback(`✅ 正确净化：${description}`, 'success');
+                } else {
+                    // 错误点击正确标签
+                    this.style.background = 'rgba(255, 0, 0, 0.3)';
+                    this.style.borderColor = '#ff0000';
+                    setTimeout(() => {
+                        if (this.parentNode) this.remove();
+                    }, 300);
+                    decreaseShield(15);
+                    gameState.defenseScore = Math.max(0, gameState.defenseScore - 15);
+                    showFeedback(`❌ 错误！这是正确标签：${description}`, 'error');
+                }
+                updateUI();
+            });
+            
+            defenseArea.appendChild(attackTag);
+            
+            // 5秒后自动消失
+            setTimeout(() => {
+                if (attackTag.parentNode) {
+                    const type = attackTag.getAttribute('data-type');
+                    const description = attackTag.getAttribute('data-description');
+                    
+                    if (type === 'pollution') {
+                        // 错过污染标签
+                        attackTag.style.background = 'rgba(255, 0, 0, 0.3)';
+                        attackTag.style.borderColor = '#ff0000';
+                        setTimeout(() => {
+                            if (attackTag.parentNode) attackTag.remove();
+                        }, 300);
+                        decreaseShield(10);
+                        showFeedback(`❌ 错过了污染标签：${description}`, 'error');
+                    } else {
+                        // 正确忽略正确标签
+                        attackTag.style.background = 'rgba(0, 255, 0, 0.3)';
+                        attackTag.style.borderColor = '#00ff00';
+                        setTimeout(() => {
+                            if (attackTag.parentNode) attackTag.remove();
+                        }, 300);
+                        increaseShield(5);
+                        gameState.defenseScore += 5;
+                        showFeedback(`✅ 正确保护：${description}`, 'success');
+                    }
+                    updateUI();
+                }
+            }, 5000);
+        }
+
+        // 清除所有攻击标签
+        function clearAttackTags() {
+            const attackTags = document.querySelectorAll('.tag-attack');
+            attackTags.forEach(tag => tag.remove());
+        }
+
+        // 增加护盾值
+        function increaseShield(amount) {
+            gameState.shieldValue = Math.min(100, gameState.shieldValue + amount);
+        }
+
+        // 减少护盾值
+        function decreaseShield(amount) {
+            gameState.shieldValue = Math.max(0, gameState.shieldValue - amount);
+        }
+
+        // 更新提示
+        function updateHint() {
+            currentHint.innerHTML = gameState.hints[gameState.currentWave];
+        }
+
+        // 结束守卫战
+        function endDefense() {
+            gameState.isDefending = false;
+            clearAttackTags();
+            correctTag.classList.remove('protected');
+            
+            if (gameState.shieldValue >= 80) {
+                // 守卫成功
+                completionBadge.style.display = 'block';
+                showFeedback(`🎉 守卫成功！最终得分：${gameState.defenseScore}`, 'success');
+                
+                // 奖励金币
+                gameState.goldCoins += 5;
+                updateUI();
+                
+                // 显示成功消息
+                setTimeout(() => {
+                    alert(`🎉 语义守卫战胜利！\n\n最终得分：${gameState.defenseScore}\n获得奖励：5金币\n"一个页面只有一个最高级标题，语义结构才稳固！"`);
+                }, 2000);
+            } else {
+                // 守卫失败
+                showFeedback(`护盾值不足（${gameState.shieldValue}%），需要≥80%才能通关`, 'error');
+            }
+        }
+
+        // 初始化
+        function init() {
+            updateUI();
+            updatePreview();
+            setupModeSelector();
+            
+            // 添加代码更改监听
+            document.getElementById('html-code').addEventListener('input', function() {
+                updatePreview();
+            });
+            
+            // 显示新手指导
+            setTimeout(() => {
+                showTutorial();
+            }, 1000);
+        }
+
+        // 启动游戏
+        init();
+    </script>
+</body>
+</html>
